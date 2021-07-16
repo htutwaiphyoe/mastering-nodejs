@@ -55,6 +55,7 @@
             color: var(--first-color-alt);
         }
     }
+
     @include responsive(767, 1) {
         &__menu {
             position: fixed;
@@ -76,4 +77,8 @@
             -o-transition: 0.3s;
         }
     }
+}
+
+.nav-show {
+    bottom: 0;
 }
