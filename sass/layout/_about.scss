@@ -1,0 +1,44 @@
+.about {
+    &__img {
+        width: 200px;
+        border-radius: 0.5rem;
+        -webkit-border-radius: 0.5rem;
+        -moz-border-radius: 0.5rem;
+        -ms-border-radius: 0.5rem;
+        -o-border-radius: 0.5rem;
+        justify-self: center;
+        align-self: center;
+    }
+
+    &__description {
+        text-align: center;
+        margin-bottom: var(--mb-2);
+    }
+
+    &__info {
+        display: flex;
+        justify-content: space-evenly;
+        margin-bottom: var(--mb-2);
+
+        %block {
+            display: block;
+            text-align: center;
+        }
+        &-title {
+            font-size: var(--h2-font-size);
+            font-weight: var(--font-semi-bold);
+            color: var(--title-color);
+            @extend %block;
+        }
+
+        &-name {
+            font-size: var(--smaller-font-size);
+            @extend %block;
+        }
+    }
+
+    &__buttons {
+        display: flex;
+        justify-content: center;
+    }
+}
