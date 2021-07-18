@@ -1,0 +1,141 @@
+%icon {
+    font-size: 2rem;
+    color: var(--first-color);
+}
+
+%bar {
+    height: 5px;
+    border-radius: 0.25rem;
+    -webkit-border-radius: 0.25rem;
+    -moz-border-radius: 0.25rem;
+    -ms-border-radius: 0.25rem;
+    -o-border-radius: 0.25rem;
+}
+.skills {
+    &__container {
+        row-gap: 0;
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--mb-2-5);
+        cursor: pointer;
+    }
+
+    &__icon {
+        margin-right: var(--mb-0-75);
+        @extend %icon;
+    }
+
+    &__arrow {
+        margin-left: auto;
+        transition: 0.4s;
+        -webkit-transition: 0.4s;
+        -moz-transition: 0.4s;
+        -ms-transition: 0.4s;
+        -o-transition: 0.4s;
+        @extend %icon;
+    }
+
+    &__title {
+        font-size: var(--h3-font-size);
+    }
+
+    &__subtitle {
+        font-size: var(--small-font-size);
+        color: var(--text-color-light);
+    }
+
+    &__titles {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--mb-0-5);
+    }
+
+    &__name {
+        font-size: var(--normal-font-size);
+        font-weight: var(--font-medium);
+    }
+
+    &__bar {
+        background-color: var(--first-color-lighter);
+        @extend %bar;
+    }
+
+    &__percentage {
+        display: block;
+        background-color: var(--first-color);
+        @extend %bar;
+    }
+    &__list {
+        row-gap: 1.5rem;
+        padding-left: 2.7rem;
+        transition: 0.4s;
+        -webkit-transition: 0.4s;
+        -moz-transition: 0.4s;
+        -ms-transition: 0.4s;
+        -o-transition: 0.4s;
+    }
+    &__html {
+        width: 90%;
+    }
+
+    &__css {
+        width: 80%;
+    }
+
+    &__js {
+        width: 78%;
+    }
+
+    &__react {
+        width: 73%;
+    }
+    &__php {
+        width: 80%;
+    }
+    &__node {
+        width: 70%;
+    }
+
+    &__firebase {
+        width: 80%;
+    }
+
+    &__python {
+        width: 60%;
+    }
+
+    &__figma {
+        width: 90%;
+    }
+
+    &__sketch {
+        width: 75%;
+    }
+
+    &__photoshop {
+        width: 85%;
+    }
+
+    &__open &__list {
+        height: -webkit-max-content;
+        height: -moz-max-content;
+        height: max-content;
+        margin-bottom: var(--mb-2-5);
+    }
+
+    &__open &__arrow {
+        transform: rotate(-180deg);
+        -webkit-transform: rotate(-180deg);
+        -moz-transform: rotate(-180deg);
+        -ms-transform: rotate(-180deg);
+        -o-transform: rotate(-180deg);
+    }
+
+    &__close &__list {
+        height: 0;
+        overflow: hidden;
+    }
+}

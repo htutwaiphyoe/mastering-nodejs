@@ -335,4 +335,121 @@ img {
   justify-content: center;
 }
 
+.skills__arrow, .skills__icon {
+  font-size: 2rem;
+  color: var(--first-color);
+}
+
+.skills__percentage, .skills__bar {
+  height: 5px;
+  border-radius: 0.25rem;
+  -webkit-border-radius: 0.25rem;
+  -moz-border-radius: 0.25rem;
+  -ms-border-radius: 0.25rem;
+  -o-border-radius: 0.25rem;
+}
+
+.skills__container {
+  row-gap: 0;
+}
+.skills__header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--mb-2-5);
+  cursor: pointer;
+}
+.skills__icon {
+  margin-right: var(--mb-0-75);
+}
+.skills__arrow {
+  margin-left: auto;
+  transition: 0.4s;
+  -webkit-transition: 0.4s;
+  -moz-transition: 0.4s;
+  -ms-transition: 0.4s;
+  -o-transition: 0.4s;
+}
+.skills__title {
+  font-size: var(--h3-font-size);
+}
+.skills__subtitle {
+  font-size: var(--small-font-size);
+  color: var(--text-color-light);
+}
+.skills__titles {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--mb-0-5);
+}
+.skills__name {
+  font-size: var(--normal-font-size);
+  font-weight: var(--font-medium);
+}
+.skills__bar {
+  background-color: var(--first-color-lighter);
+}
+.skills__percentage {
+  display: block;
+  background-color: var(--first-color);
+}
+.skills__list {
+  row-gap: 1.5rem;
+  padding-left: 2.7rem;
+  transition: 0.4s;
+  -webkit-transition: 0.4s;
+  -moz-transition: 0.4s;
+  -ms-transition: 0.4s;
+  -o-transition: 0.4s;
+}
+.skills__html {
+  width: 90%;
+}
+.skills__css {
+  width: 80%;
+}
+.skills__js {
+  width: 78%;
+}
+.skills__react {
+  width: 73%;
+}
+.skills__php {
+  width: 80%;
+}
+.skills__node {
+  width: 70%;
+}
+.skills__firebase {
+  width: 80%;
+}
+.skills__python {
+  width: 60%;
+}
+.skills__figma {
+  width: 90%;
+}
+.skills__sketch {
+  width: 75%;
+}
+.skills__photoshop {
+  width: 85%;
+}
+.skills__open .skills__list {
+  height: -webkit-max-content;
+  height: -moz-max-content;
+  height: max-content;
+  margin-bottom: var(--mb-2-5);
+}
+.skills__open .skills__arrow {
+  transform: rotate(-180deg);
+  -webkit-transform: rotate(-180deg);
+  -moz-transform: rotate(-180deg);
+  -ms-transform: rotate(-180deg);
+  -o-transform: rotate(-180deg);
+}
+.skills__close .skills__list {
+  height: 0;
+  overflow: hidden;
+}
+
 /*# sourceMappingURL=styles.css.map */
