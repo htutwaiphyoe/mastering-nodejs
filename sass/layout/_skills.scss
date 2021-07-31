@@ -76,7 +76,6 @@
     &__list {
         row-gap: 1.5rem;
         padding-left: 2.7rem;
-        @extend %click;
     }
     &__html {
         width: 90%;
