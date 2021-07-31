@@ -11,6 +11,15 @@
     -ms-border-radius: 0.25rem;
     -o-border-radius: 0.25rem;
 }
+%click {
+    transition: 0.4s;
+    -webkit-transition: 0.4s;
+    -moz-transition: 0.4s;
+    -ms-transition: 0.4s;
+    -o-transition: 0.4s;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
 .skills {
     &__container {
         row-gap: 0;
@@ -30,11 +39,7 @@
 
     &__arrow {
         margin-left: auto;
-        transition: 0.4s;
-        -webkit-transition: 0.4s;
-        -moz-transition: 0.4s;
-        -ms-transition: 0.4s;
-        -o-transition: 0.4s;
+        @extend %click;
         @extend %icon;
     }
 
@@ -71,11 +76,7 @@
     &__list {
         row-gap: 1.5rem;
         padding-left: 2.7rem;
-        transition: 0.4s;
-        -webkit-transition: 0.4s;
-        -moz-transition: 0.4s;
-        -ms-transition: 0.4s;
-        -o-transition: 0.4s;
+        @extend %click;
     }
     &__html {
         width: 90%;

@@ -236,6 +236,7 @@ img {
 }
 .home__social {
   display: grid;
+  grid-template-columns: -webkit-max-content;
   grid-template-columns: max-content;
   row-gap: 1rem;
 }
@@ -451,5 +452,3 @@ img {
   height: 0;
   overflow: hidden;
 }
-
-/*# sourceMappingURL=styles.css.map */
