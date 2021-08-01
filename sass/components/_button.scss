@@ -28,4 +28,19 @@
         display: inline-flex;
         align-items: center;
     }
+
+    &--small {
+        padding: 0.75rem 1rem;
+    }
+
+    &--link {
+        padding: 0;
+        background-color: transparent;
+        color: var(--first-color);
+
+        &:hover {
+            background-color: transparent;
+            color: var(--first-color-alt);
+        }
+    }
 }
