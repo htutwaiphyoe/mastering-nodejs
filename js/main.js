@@ -63,6 +63,21 @@ tabs.forEach((tab) => {
 });
 
 /*==================== SERVICES MODAL ====================*/
+const modalViews = document.querySelectorAll(".services__modal");
+const modalBtns = document.querySelectorAll(".services__button");
+const modalCloses = document.querySelectorAll(".services__modal-close");
+
+function changeModal(modal) {
+    modalViews[modal].classList.toggle("active-modal");
+}
+
+modalBtns.forEach((modalBtn, i) => {
+    modalBtn.addEventListener("click", () => changeModal(i));
+});
+
+modalCloses.forEach((modalClose, i) => {
+    modalClose.addEventListener("click", () => changeModal(i));
+});
 
 /*==================== PORTFOLIO SWIPER  ====================*/
 

@@ -1,13 +1,13 @@
 .services {
     &__container {
-        gap: 1.5rem;
+        gap: 1rem;
         grid-template-columns: repeat(2, 1fr);
     }
 
     &__content {
         position: relative;
         background-color: var(--container-color);
-        padding: 2rem 0.5rem 1.25rem 1.5rem;
+        padding: 2rem 0.5rem 1.25rem 1rem;
         border-radius: 0.25rem;
         -webkit-border-radius: 0.25rem;
         -moz-border-radius: 0.25rem;
