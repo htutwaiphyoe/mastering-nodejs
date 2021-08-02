@@ -1,0 +1,71 @@
+.portfolio {
+    &__container {
+        overflow: initial;
+    }
+
+    &__content {
+        box-sizing: border-box;
+        padding: 0 1.5rem;
+    }
+
+    &__img {
+        width: 265px;
+        border-radius: 0.5rem;
+        -webkit-border-radius: 0.5rem;
+        -moz-border-radius: 0.5rem;
+        -ms-border-radius: 0.5rem;
+        -o-border-radius: 0.5rem;
+        justify-self: center;
+    }
+
+    &__title {
+        font-size: var(--h3-font-size);
+        margin-bottom: var(--mb-0-5);
+    }
+
+    &__description {
+        margin-bottom: var(--mb-0-75);
+    }
+
+    &__button {
+        padding: 0.6rem 0.75rem;
+    }
+    &__button:hover .button__icon {
+        transform: translateX(0.25rem);
+        -webkit-transform: translateX(0.25rem);
+        -moz-transform: translateX(0.25rem);
+        -ms-transform: translateX(0.25rem);
+        -o-transform: translateX(0.25rem);
+    }
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+    content: "";
+}
+
+.swiper-arrow-icon {
+    font-size: 2rem;
+    color: var(--first-color);
+}
+.swiper-button-next {
+    right: -0.75rem;
+}
+
+.swiper-button-prev {
+    left: -0.75rem;
+}
+
+.swiper-container-horizontal > .swiper-pagination-bullets {
+    bottom: -2.5rem;
+}
+
+.swiper-pagination-bullet-active {
+    background-color: var(--first-color);
+}
+
+.swiper-button-prev,
+.swiper-button-next,
+.swiper-pagination-bullet {
+    outline: none;
+}
