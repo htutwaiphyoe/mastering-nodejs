@@ -144,6 +144,10 @@ img {
   background-color: transparent;
   color: var(--first-color-alt);
 }
+.button--white {
+  background-color: #fff;
+  color: var(--first-color);
+}
 
 .header {
   width: 100%;
@@ -699,6 +703,29 @@ img {
 .swiper-button-next,
 .swiper-pagination-bullet {
   outline: none;
+}
+
+.project__description, .project__title {
+  color: #fff;
+}
+
+.project {
+  text-align: center;
+}
+.project__bg {
+  background-color: var(--first-color-second);
+  padding-top: 3rem;
+}
+.project__title {
+  font-size: var(--h2-font-size);
+  margin-bottom: var(--mb-0-75);
+}
+.project__description {
+  margin-bottom: var(--mb-1-5);
+}
+.project__img {
+  width: 232px;
+  justify-self: center;
 }
 
 /*# sourceMappingURL=styles.css.map */

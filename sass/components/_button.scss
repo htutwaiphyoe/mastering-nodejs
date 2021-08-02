@@ -43,4 +43,9 @@
             color: var(--first-color-alt);
         }
     }
+
+    &--white {
+        background-color: #fff;
+        color: var(--first-color);
+    }
 }
