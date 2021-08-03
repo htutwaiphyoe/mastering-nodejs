@@ -169,3 +169,5 @@ themeButton.addEventListener("click", function () {
     theme = document.body.classList.contains(darkTheme) ? "dark" : "light";
     localStorage.setItem("alexa-theme", theme);
 });
+
+/*==================== SCROLL REVEAL ====================*/
