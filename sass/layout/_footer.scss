@@ -53,4 +53,43 @@
         @extend %color-white;
         margin-top: var(--mb-3);
     }
+
+    @include responsive(568, 0) {
+        &__container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @include responsive(768, 0) {
+        &__container {
+            padding: 0 1rem;
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        &__bg {
+            padding: 3rem 1rem 3.5rem;
+        }
+
+        &__links {
+            flex-direction: row;
+            column-gap: 2rem;
+        }
+
+        &__socials {
+            justify-self: flex-end;
+        }
+
+        &__copy {
+            margin-top: 4rem;
+        }
+    }
+
+    @include responsive(1024, 0) {
+        &__bg {
+            padding: 3rem 0 3.5rem;
+        }
+        &__container {
+            padding: 0;
+        }
+    }
 }

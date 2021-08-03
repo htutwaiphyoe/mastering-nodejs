@@ -41,4 +41,26 @@
         display: flex;
         justify-content: center;
     }
+
+    @include responsive(768, 0) {
+        &__container {
+            grid-template-columns: repeat(2, 1fr);
+            column-gap: 3rem;
+        }
+
+        &__img {
+            width: 350px;
+        }
+
+        &__description {
+            text-align: initial;
+        }
+        &__info {
+            justify-content: space-between;
+        }
+
+        &__buttons {
+            justify-content: initial;
+        }
+    }
 }

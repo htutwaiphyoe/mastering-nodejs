@@ -79,4 +79,30 @@
             color: var(--first-color);
         }
     }
+    @include responsive(350, 1) {
+        &__data {
+            gap: 0.5rem;
+        }
+    }
+
+    @include responsive(568, 0) {
+        &__sections {
+            display: grid;
+            grid-template-columns: 0.6fr;
+            justify-content: center;
+        }
+    }
+
+    @include responsive(768, 0) {
+        &__tabs {
+            justify-content: center;
+        }
+
+        &__button {
+            margin-right: 2.5rem;
+        }
+        &__sections {
+            grid-template-columns: 0.5fr;
+        }
+    }
 }

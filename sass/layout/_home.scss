@@ -86,4 +86,63 @@
             font-size: 1.25rem;
         }
     }
+
+    @include responsive(350, 1) {
+        &__content {
+            grid-template-columns: 0.25fr 3fr;
+        }
+
+        &__blob {
+            width: 180px;
+        }
+    }
+
+    @include responsive(568, 0) {
+        &__content {
+            grid-template-columns: max-content 1fr 1fr;
+        }
+
+        &__data {
+            grid-column: initial;
+        }
+
+        &__image {
+            order: 1;
+            justify-self: center;
+        }
+    }
+
+    @include responsive(768, 0) {
+        &__container {
+            row-gap: 2rem;
+        }
+
+        &__content {
+            column-gap: 3rem;
+        }
+
+        &__blob {
+            width: 270px;
+        }
+
+        &__scroll {
+            display: block;
+            &-button {
+                margin-left: 3rem;
+            }
+        }
+    }
+    @include responsive(1024, 0) {
+        &__blob {
+            width: 320px;
+        }
+
+        &__social {
+            transform: translateX(-6rem);
+            -webkit-transform: translateX(-6rem);
+            -moz-transform: translateX(-6rem);
+            -ms-transform: translateX(-6rem);
+            -o-transform: translateX(-6rem);
+        }
+    }
 }

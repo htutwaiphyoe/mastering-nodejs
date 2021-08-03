@@ -37,6 +37,23 @@
     &__icon-star {
         color: var(--first-color);
     }
+
+    @include responsive(350, 1) {
+        &__header,
+        &__data {
+            flex-direction: column;
+            align-items: center;
+        }
+        &__img {
+            margin-right: 0;
+            margin-bottom: var(--mb-0-25);
+        }
+
+        &__data,
+        &__description {
+            text-align: center;
+        }
+    }
 }
 
 .swiper-container .swiper-pagination-testimonial {

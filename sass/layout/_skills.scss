@@ -138,4 +138,16 @@
         height: 0;
         overflow: hidden;
     }
+
+    @include responsive(350, 1) {
+        &__title {
+            font-size: var(--normal-font-size);
+        }
+    }
+
+    @include responsive(768, 0) {
+        &__container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
 }

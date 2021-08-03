@@ -7,7 +7,7 @@
     &__content {
         position: relative;
         background-color: var(--container-color);
-        padding: 2rem 0.5rem 1.25rem 1rem;
+        padding: 2.5rem 0.5rem 1.25rem 1rem;
         border-radius: 0.25rem;
         -webkit-border-radius: 0.25rem;
         -moz-border-radius: 0.25rem;
@@ -108,6 +108,46 @@
         &-icon {
             color: var(--first-color);
             margin-right: var(--mb-0-25);
+        }
+    }
+
+    @include responsive(350, 1) {
+        &__container {
+            grid-template-columns: max-content;
+            justify-content: center;
+        }
+
+        &__content {
+            padding-right: 3.5rem;
+        }
+
+        &__modal {
+            padding: 0 0.5rem;
+        }
+    }
+
+    @include responsive(768, 0) {
+        &__container {
+            grid-template-columns: repeat(3, 218px);
+            justify-content: center;
+        }
+
+        &__icon {
+            font-size: 2rem;
+        }
+
+        &__modal {
+            &-content {
+                width: 450px;
+            }
+        }
+    }
+
+    @include responsive(1024, 0) {
+        &__container {
+            grid-template-columns: repeat(3, 238px);
+            justify-content: center;
+            gap: 1.5rem;
         }
     }
 }

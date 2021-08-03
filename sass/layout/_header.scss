@@ -5,4 +5,14 @@
     left: 0;
     z-index: var(--z-fixed);
     background-color: var(--body-color);
+
+    @include responsive(768, 0) {
+        top: 0;
+        bottom: initial;
+        padding: 0 1rem;
+    }
+
+    @include responsive(1024, 0) {
+        padding: 0;
+    }
 }

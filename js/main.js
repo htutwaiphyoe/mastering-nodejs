@@ -67,6 +67,8 @@ const modalViews = document.querySelectorAll(".services__modal");
 const modalBtns = document.querySelectorAll(".services__button");
 const modalCloses = document.querySelectorAll(".services__modal-close");
 
+modalViews.forEach((modal) => modal.classList.remove("active-modal"));
+
 function changeModal(modal) {
     modalViews[modal].classList.toggle("active-modal");
 }
@@ -136,7 +138,7 @@ window.addEventListener("scroll", scrollTracker);
 /*==================== CHANGE BACKGROUND HEADER ====================*/
 function scrollHeader() {
     const nav = document.getElementById("header");
-    if (this.scrollY >= 80) nav.classList.add("scroll-header");
+    if (this.scrollY >= 10) nav.classList.add("scroll-header");
     else nav.classList.remove("scroll-header");
 }
 
@@ -171,3 +173,18 @@ themeButton.addEventListener("click", function () {
 });
 
 /*==================== SCROLL REVEAL ====================*/
+const sr = ScrollReveal({
+    distance: "60px",
+    duration: 2800,
+    // reset: true,
+});
+
+sr.reveal(`.home__social, .home__data`, {
+    origin: "left",
+    interval: 100,
+});
+
+sr.reveal(`.home__image`, {
+    origin: "right",
+    interval: 100,
+});
