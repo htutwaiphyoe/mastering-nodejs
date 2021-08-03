@@ -77,10 +77,13 @@
             -o-transition: 0.3s;
         }
     }
-}
-
-.nav-show {
-    bottom: 0;
+    &-show {
+        bottom: 0;
+    }
+    &__btns {
+        display: flex;
+        align-items: center;
+    }
 }
 
 .active-link {
@@ -89,4 +92,15 @@
 
 .scroll-header {
     box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.change-theme {
+    font-size: 1.25rem;
+    color: var(--title-color);
+    margin-right: var(--mb-1);
+    cursor: pointer;
+
+    &:hover {
+        color: var(--first-color);
+    }
 }
