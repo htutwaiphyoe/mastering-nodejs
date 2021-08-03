@@ -176,7 +176,7 @@ themeButton.addEventListener("click", function () {
 const sr = ScrollReveal({
     distance: "60px",
     duration: 2800,
-    reset: true,
+    // reset: true,
 });
 
 sr.reveal(
@@ -193,7 +193,7 @@ sr.reveal(`.home__image, .about__description, .about__info,.project__img, .conta
 });
 
 sr.reveal(
-    `.skills__content, .qualification__container, .services__content, .testimonial__container, .footer__links, .footer__socials, .footer__data`,
+    `.skills__content, .qualification__container, .testimonial__container, .footer__links, .footer__socials, .footer__data`,
     {
         origin: "top",
         interval: 100,
