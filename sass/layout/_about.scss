@@ -63,4 +63,9 @@
             justify-content: initial;
         }
     }
+    @include responsive(1024, 0) {
+        &__container {
+            column-gap: 0rem;
+        }
+    }
 }
