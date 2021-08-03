@@ -1205,9 +1205,6 @@ img {
   }
 }
 @media only screen and (min-width: 1024px) {
-  .contact__form {
-    width: 460px;
-  }
   .contact__inputs {
     grid-template-columns: repeat(2, 1fr);
   }

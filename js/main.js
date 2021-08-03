@@ -176,15 +176,31 @@ themeButton.addEventListener("click", function () {
 const sr = ScrollReveal({
     distance: "60px",
     duration: 2800,
-    // reset: true,
+    reset: true,
 });
 
-sr.reveal(`.home__social, .home__data`, {
-    origin: "left",
+sr.reveal(
+    `.home__social, .home__data, .about__img, .portfolio__container, .project__data, .contact__informations`,
+    {
+        origin: "left",
+        interval: 100,
+    }
+);
+
+sr.reveal(`.home__image, .about__description, .about__info,.project__img, .contact__form`, {
+    origin: "right",
     interval: 100,
 });
 
-sr.reveal(`.home__image`, {
-    origin: "right",
+sr.reveal(
+    `.skills__content, .qualification__container, .services__content, .testimonial__container, .footer__links, .footer__socials, .footer__data`,
+    {
+        origin: "top",
+        interval: 100,
+    }
+);
+
+sr.reveal(`.home__scroll, .about__buttons, .footer__copy`, {
+    origin: "bottom",
     interval: 100,
 });

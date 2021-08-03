@@ -63,10 +63,6 @@
     }
 
     @include responsive(1024, 0) {
-        &__form {
-            width: 460px;
-        }
-
         &__inputs {
             grid-template-columns: repeat(2, 1fr);
         }
