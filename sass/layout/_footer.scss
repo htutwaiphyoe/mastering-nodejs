@@ -1,0 +1,56 @@
+%hover {
+    &:hover {
+        color: var(--first-color-lighter);
+    }
+}
+
+%color-white {
+    color: #fff;
+}
+.footer {
+    padding-top: 2rem;
+
+    &__bg {
+        background-color: var(--first-color-second);
+        padding: 2rem 0 3rem;
+    }
+    &__container {
+        row-gap: 3.5rem;
+    }
+
+    &__title {
+        font-size: var(--h1-font-size);
+        margin-bottom: var(--mb-0-25);
+        @extend %color-white;
+    }
+
+    &__subtitle {
+        font-size: var(--small-font-size);
+        @extend %color-white;
+    }
+
+    &__links {
+        display: flex;
+        flex-direction: column;
+        row-gap: 1.5rem;
+    }
+
+    &__link {
+        @extend %hover;
+        @extend %color-white;
+    }
+
+    &__social {
+        font-size: 1.25rem;
+        margin-right: var(--mb-1-5);
+        @extend %hover;
+        @extend %color-white;
+    }
+
+    &__copy {
+        font-size: var(--small-font-size);
+        text-align: center;
+        @extend %color-white;
+        margin-top: var(--mb-3);
+    }
+}
