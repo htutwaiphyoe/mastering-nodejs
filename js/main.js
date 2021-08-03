@@ -113,6 +113,25 @@ let swiperTestimonial = new Swiper(".testimonial__container", {
 });
 
 /*==================== SCROLL SECTIONS ACTIVE LINK ====================*/
+const sections = document.querySelectorAll("section[id]");
+
+function scrollTracker() {
+    const currentYScroll = window.scrollY;
+
+    sections.forEach((section) => {
+        const sectionHeight = section.offsetHeight;
+        const sectionTop = section.offsetTop - 50;
+        const id = section.getAttribute("id");
+        const currentNavLink = document.querySelector(`.nav__menu a[href*="#${id}"]`);
+        if (currentYScroll > sectionTop && currentYScroll <= sectionTop + sectionHeight) {
+            currentNavLink.classList.add("active-link");
+        } else {
+            currentNavLink.classList.remove("active-link");
+        }
+    });
+}
+
+window.addEventListener("scroll", scrollTracker);
 
 /*==================== CHANGE BACKGROUND HEADER ====================*/
 
