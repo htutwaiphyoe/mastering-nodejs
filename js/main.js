@@ -142,5 +142,12 @@ function scrollHeader() {
 
 window.addEventListener("scroll", scrollHeader);
 /*==================== SHOW SCROLL UP ====================*/
+function scrollUp() {
+    const scrollUp = document.getElementById("scrollUp");
+    if (this.scrollY >= 560) scrollUp.classList.add("show-scrollUp");
+    else scrollUp.classList.remove("show-scrollUp");
+}
+
+window.addEventListener("scroll", scrollUp);
 
 /*==================== DARK LIGHT THEME ====================*/

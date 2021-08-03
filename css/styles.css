@@ -149,6 +149,37 @@ img {
   color: var(--first-color);
 }
 
+.scrollUp {
+  position: fixed;
+  right: 1rem;
+  bottom: -20%;
+  background-color: var(--first-color);
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.4rem;
+  -webkit-border-radius: 0.4rem;
+  -moz-border-radius: 0.4rem;
+  -ms-border-radius: 0.4rem;
+  -o-border-radius: 0.4rem;
+  opacity: 0.8;
+  z-index: var(--z-tooltip);
+  transition: 0.4s;
+  -webkit-transition: 0.4s;
+  -moz-transition: 0.4s;
+  -ms-transition: 0.4s;
+  -o-transition: 0.4s;
+}
+.scrollUp:hover {
+  background-color: var(--first-color-alt);
+}
+.scrollUp__icon {
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.show-scrollUp {
+  bottom: 5rem;
+}
+
 .header {
   width: 100%;
   position: fixed;
