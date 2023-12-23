@@ -13,3 +13,11 @@ JS as server-side code
 NodeJS => single-threaded, event-driven, non-blocking I/O model
 
 avoid CPU intensive application
+
+## REPL
+
+node => read, eval, print, loop
+
+nodejs uses module system to support additional functionalities.
+
+use `require` function to import module.
