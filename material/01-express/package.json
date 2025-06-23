@@ -1,0 +1,16 @@
+{
+  "name": "express-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --watch index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.9.0",
+    "express": "^4.21.1"
+  }
+}
