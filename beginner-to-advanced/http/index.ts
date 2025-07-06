@@ -3,11 +3,17 @@ import http from "node:http";
 const port = 8000;
 
 const server = http.createServer((req, res) => {
-  console.log("Incoming request");
+  if (req.url === "/") {
+    res.writeHead(200, { "content-type": "application/json" });
 
-  res.writeHead(200, { "content-type": "application/json" });
+    res.end("Hello");
+  }
 
-  res.end("Hello");
+  if (req.url === "/contact-us") {
+    res.writeHead(200, { "content-type": "application/json" });
+
+    res.end("Contact Usdasdf");
+  }
 });
 
 server.listen(port, () => {
