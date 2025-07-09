@@ -1,43 +1,66 @@
 import http from "node:http";
+import { log } from "./logger";
 
 const port = 8000;
 
-const url = {
+const ENDPOINT = {
   root: "/",
   contact: "/contact-us",
 };
 
 const server = http.createServer((req, res) => {
-  switch (req.url) {
-    case url.root:
-      res.writeHead(200, { "content-type": "application/json" });
+  const method = req.method;
+  const path = req.url;
 
-      return res.end(
-        JSON.stringify({
-          statue: "success",
-          message: "Hello",
-        }),
-      );
+  log(`${Date()}: ${method} with ${path}`);
 
-    case url.contact:
-      res.writeHead(200, { "content-type": "application/json" });
+  switch (method) {
+    case "GET":
+      switch (path) {
+        case ENDPOINT.root:
+          res.writeHead(200, { "content-type": "application/json" });
 
-      return res.end(
-        JSON.stringify({
-          statue: "success",
-          message: "Contact Us",
-        }),
-      );
+          return res.end(
+            JSON.stringify({
+              statue: "success",
+              message: "Hello",
+            }),
+          );
 
-    default:
-      res.writeHead(404, { "content-type": "application/json" });
+        default:
+          res.writeHead(404, { "content-type": "application/json" });
 
-      res.end(
-        JSON.stringify({
-          statue: "fail",
-          message: "Page Not Found",
-        }),
-      );
+          res.end(
+            JSON.stringify({
+              statue: "fail",
+              message: "Page Not Found",
+            }),
+          );
+      }
+      break;
+
+    case "POST":
+      switch (path) {
+        case ENDPOINT.contact:
+          res.writeHead(201, { "content-type": "application/json" });
+
+          return res.end(
+            JSON.stringify({
+              statue: "success",
+              message: "Your contact has been sent.",
+            }),
+          );
+
+        default:
+          res.writeHead(404, { "content-type": "application/json" });
+
+          res.end(
+            JSON.stringify({
+              statue: "fail",
+              message: "Page Not Found",
+            }),
+          );
+      }
   }
 });
 
