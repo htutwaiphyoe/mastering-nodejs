@@ -12,7 +12,7 @@ const server = http.createServer((req, res) => {
   const method = req.method;
   const path = req.url;
 
-  log(`${Date()}: ${method} with ${path}`);
+  log(`${Date()}: ${method} with ${path}\n`);
 
   switch (method) {
     case "GET":
