@@ -13,12 +13,19 @@ app.get("/books", (req, res) => {
 app.get("/books/:id", (req, res) => {
   const id = +req.params.id;
 
+  if (isNaN(id)) {
+    return res.status(400).json({
+      status: "error",
+      message: "Id is invalid.",
+    });
+  }
+
   const book = books.find((book) => book.id === id);
 
   if (!book) {
     return res.status(404).json({
       status: "failed",
-      book: null,
+      message: "Book is not found.",
     });
   }
 
