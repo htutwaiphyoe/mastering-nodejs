@@ -1,5 +1,6 @@
 import express from "express";
 import { books } from "./db";
+import { Book } from "./types";
 
 const app = express();
 
@@ -37,19 +38,34 @@ app.get("/books/:id", (req, res) => {
   });
 });
 
-app.post("/books", (req, res) => {
-  const body = req.body;
+app.post<{}, unknown, Book>("/books", (req, res) => {
+  const { title, author } = req.body;
 
-  if (!body) {
+  if (!title || !author) {
     return res.status(400).json({
       status: "error",
       message: "data is invalid.",
     });
   }
 
-  books.push({ id: books.length, ...body });
+  const book = { id: books.length + 1, title, author };
+
+  books.push(book);
 
   res.status(201).json({
+    status: "success",
+    book,
+  });
+});
+
+app.delete("/books/:id", (req, res) => {
+  const id = +req.params.id;
+
+  const book = books.findIndex((book) => book.id === id);
+
+  books.splice(book, 1);
+
+  res.status(204).json({
     status: "success",
   });
 });
