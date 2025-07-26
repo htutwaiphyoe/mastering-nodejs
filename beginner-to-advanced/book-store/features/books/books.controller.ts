@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { books } from "../../db";
+import { books } from "./books.model";
 
 export const getBooks = (req: Request, res: Response) => {
   res.status(200).json({
