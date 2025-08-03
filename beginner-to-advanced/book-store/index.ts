@@ -1,6 +1,6 @@
 import "dotenv/config";
 import express from "express";
-import bookRouter from "./features/books/books.router";
+import bookRouter from "@/features/books/books.router";
 
 const app = express();
 

@@ -1,24 +1,27 @@
-import { Request, Response } from "express";
-import { books } from "./books.model";
+import type { Request, Response } from "express";
+import db from "@/db";
+import { booksTable, type NewBook } from "./books.model";
+import { eq } from "drizzle-orm";
 
-export const getBooks = (req: Request, res: Response) => {
+export const getBooks = async (req: Request, res: Response) => {
+  const books = await db.select().from(booksTable);
   res.status(200).json({
     status: "success",
     books,
   });
 };
 
-export const getBookById = (req: Request, res: Response) => {
-  const id = +req.params.id;
+export const getBookById = async (
+  req: Request<{ id: string }>,
+  res: Response,
+) => {
+  const { id } = req.params;
 
-  if (isNaN(id)) {
-    return res.status(400).json({
-      status: "error",
-      message: "Id is invalid.",
-    });
-  }
-
-  const book = books.find((book) => book.id === id);
+  const [book] = await db
+    .select()
+    .from(booksTable)
+    .where(eq(booksTable.id, id))
+    .limit(1);
 
   if (!book) {
     return res.status(404).json({
@@ -33,19 +36,20 @@ export const getBookById = (req: Request, res: Response) => {
   });
 };
 
-export const createBook = (req: Request, res: Response) => {
-  const { title, author } = req.body;
+export const createBook = async (
+  req: Request<{}, unknown, NewBook>,
+  res: Response,
+) => {
+  const { title, authorId } = req.body;
 
-  if (!title || !author) {
+  if (!title || !authorId) {
     return res.status(400).json({
       status: "error",
       message: "data is invalid.",
     });
   }
 
-  const book = { id: books.length + 1, title, author };
-
-  books.push(book);
+  const [book] = await db.insert(booksTable).values(req.body).returning();
 
   res.status(201).json({
     status: "success",
@@ -53,12 +57,23 @@ export const createBook = (req: Request, res: Response) => {
   });
 };
 
-export const deleteBook = (req: Request, res: Response) => {
-  const id = +req.params.id;
+export const deleteBook = async (
+  req: Request<{ id: string }>,
+  res: Response,
+) => {
+  const { id } = req.params;
 
-  const book = books.findIndex((book) => book.id === id);
+  const [book] = await db
+    .delete(booksTable)
+    .where(eq(booksTable.id, id))
+    .returning();
 
-  books.splice(book, 1);
+  if (!book) {
+    return res.status(404).json({
+      status: "failed",
+      message: "Book is not found.",
+    });
+  }
 
   res.status(204).json({
     status: "success",

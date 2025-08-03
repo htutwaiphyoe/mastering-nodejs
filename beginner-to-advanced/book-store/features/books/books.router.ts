@@ -1,11 +1,11 @@
 import express from "express";
-import { Book } from "../../types";
 import {
   createBook,
   deleteBook,
   getBookById,
   getBooks,
 } from "./books.controller";
+import type { NewBook } from "./books.model";
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ router.get("/", getBooks);
 
 router.get("/:id", getBookById);
 
-router.post<{}, unknown, Book>("/", createBook);
+router.post("/", createBook);
 
 router.delete("/:id", deleteBook);
 
