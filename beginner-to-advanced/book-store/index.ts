@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import bookRouter from "./features/books/books.router";
 

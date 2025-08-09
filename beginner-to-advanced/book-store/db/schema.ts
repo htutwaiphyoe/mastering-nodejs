@@ -1,8 +1,16 @@
-import { integer, pgTable, varchar } from "drizzle-orm/pg-core";
+import { date, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
-export const usersTable = pgTable("users", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+export const authorsTable = pgTable("authors", {
+  id: uuid().primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
-  age: integer().notNull(),
-  email: varchar({ length: 255 }).notNull().unique(),
+  email: varchar({ length: 255 }).unique(),
+  phone: varchar({ length: 20 }),
+  bio: varchar({ length: 1000 }),
+  nationality: varchar({ length: 100 }),
+  birthDate: date(),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp()
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
 });

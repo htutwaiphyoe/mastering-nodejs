@@ -1,0 +1,1 @@
+ALTER TABLE "authors" ADD COLUMN "phone" varchar(20);
