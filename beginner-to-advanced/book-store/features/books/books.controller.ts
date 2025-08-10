@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import db from "@/db";
-import { booksTable, type NewBook } from "./books.model";
+import { booksTable, type InsertBookInput } from "./books.model";
 import { eq } from "drizzle-orm";
 
 export const getBooks = async (req: Request, res: Response) => {
@@ -37,18 +37,9 @@ export const getBookById = async (
 };
 
 export const createBook = async (
-  req: Request<{}, unknown, NewBook>,
+  req: Request<{}, unknown, InsertBookInput>,
   res: Response,
 ) => {
-  const { title, authorId } = req.body;
-
-  if (!title || !authorId) {
-    return res.status(400).json({
-      status: "error",
-      message: "data is invalid.",
-    });
-  }
-
   const [book] = await db.insert(booksTable).values(req.body).returning();
 
   res.status(201).json({

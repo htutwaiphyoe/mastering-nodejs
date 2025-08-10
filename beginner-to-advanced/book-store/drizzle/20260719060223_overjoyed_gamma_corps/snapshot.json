@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "b8ca2aa6-aa03-48a8-8c28-7f7c7f297b18",
+  "id": "09042327-ea3d-4dad-923e-424385aca0f9",
   "prevIds": [
-    "7b9544db-4cbf-4982-bbee-ee5f9d453ff2"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -203,7 +203,7 @@
     {
       "type": "numeric(10,2)",
       "typeSchema": null,
-      "notNull": false,
+      "notNull": true,
       "dimensions": 0,
       "default": null,
       "generated": null,
@@ -216,7 +216,7 @@
     {
       "type": "date",
       "typeSchema": null,
-      "notNull": false,
+      "notNull": true,
       "dimensions": 0,
       "default": null,
       "generated": null,
@@ -323,6 +323,20 @@
       "schema": "public",
       "table": "books",
       "entityType": "uniques"
+    },
+    {
+      "value": "\"price\" >= 0",
+      "name": "books_price_non_negative",
+      "entityType": "checks",
+      "schema": "public",
+      "table": "books"
+    },
+    {
+      "value": "\"stock\" >= 0",
+      "name": "books_stock_non_negative",
+      "entityType": "checks",
+      "schema": "public",
+      "table": "books"
     }
   ],
   "renames": []
