@@ -1,10 +1,12 @@
 import type { Request, Response } from "express";
 import db from "@/db";
 import { booksTable, type InsertBookInput } from "./books.model";
+import type { Uuid } from "@/lib/validators";
 import { eq } from "drizzle-orm";
 
 export const getBooks = async (req: Request, res: Response) => {
   const books = await db.select().from(booksTable);
+
   res.status(200).json({
     status: "success",
     books,
@@ -12,7 +14,7 @@ export const getBooks = async (req: Request, res: Response) => {
 };
 
 export const getBookById = async (
-  req: Request<{ id: string }>,
+  req: Request<{ id: Uuid }>,
   res: Response,
 ) => {
   const { id } = req.params;
@@ -49,7 +51,7 @@ export const createBook = async (
 };
 
 export const deleteBook = async (
-  req: Request<{ id: string }>,
+  req: Request<{ id: Uuid }>,
   res: Response,
 ) => {
   const { id } = req.params;
@@ -66,7 +68,7 @@ export const deleteBook = async (
     });
   }
 
-  res.status(204).json({
+  res.status(200).json({
     status: "success",
   });
 };
