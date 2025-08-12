@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import db from "@/db";
 import { booksTable, type InsertBookInput } from "./books.model";
 import type { Uuid } from "@/lib/validators";
+import { ApiError } from "@/lib/api-error";
 import { eq } from "drizzle-orm";
 
 export const getBooks = async (req: Request, res: Response) => {
@@ -26,10 +27,7 @@ export const getBookById = async (
     .limit(1);
 
   if (!book) {
-    return res.status(404).json({
-      status: "failed",
-      message: "Book is not found.",
-    });
+    throw ApiError.notFound("Book is not found.");
   }
 
   res.status(200).json({
@@ -62,10 +60,7 @@ export const deleteBook = async (
     .returning();
 
   if (!book) {
-    return res.status(404).json({
-      status: "failed",
-      message: "Book is not found.",
-    });
+    throw ApiError.notFound("Book is not found.");
   }
 
   res.status(200).json({

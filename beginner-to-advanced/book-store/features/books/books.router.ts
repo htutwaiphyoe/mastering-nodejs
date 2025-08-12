@@ -1,5 +1,5 @@
 import express from "express";
-import { validateBody, validateParams } from "@/middleware/validate";
+import { validate } from "@/middleware/validate";
 import { idParamSchema } from "@/lib/validators";
 import {
   createBook,
@@ -13,10 +13,10 @@ const router = express.Router();
 
 router.get("/", getBooks);
 
-router.get("/:id", validateParams(idParamSchema), getBookById);
+router.get("/:id", validate("params", idParamSchema), getBookById);
 
-router.post("/", validateBody(insertBookSchema), createBook);
+router.post("/", validate("body", insertBookSchema), createBook);
 
-router.delete("/:id", validateParams(idParamSchema), deleteBook);
+router.delete("/:id", validate("params", idParamSchema), deleteBook);
 
 export default router;
