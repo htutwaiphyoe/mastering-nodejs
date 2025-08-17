@@ -1,12 +1,24 @@
 import type { Request, Response } from "express";
 import db from "@/db";
-import { booksTable, type InsertBookInput } from "./books.model";
+import {
+  booksTable,
+  type BooksQuery,
+  type InsertBookInput,
+} from "./books.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
-import { eq } from "drizzle-orm";
+import { eq, ilike } from "drizzle-orm";
 
-export const getBooks = async (req: Request, res: Response) => {
-  const books = await db.select().from(booksTable);
+export const getBooks = async (
+  req: Request<{}, unknown, unknown, BooksQuery>,
+  res: Response,
+) => {
+  const { search } = req.query;
+
+  const books = await db
+    .select()
+    .from(booksTable)
+    .where(search ? ilike(booksTable.title, `%${search}%`) : undefined);
 
   res.status(200).json({
     status: "success",

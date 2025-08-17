@@ -7,11 +7,11 @@ import {
   getBookById,
   getBooks,
 } from "./books.controller";
-import { insertBookSchema } from "./books.model";
+import { booksQuerySchema, insertBookSchema } from "./books.model";
 
 const router = express.Router();
 
-router.get("/", getBooks);
+router.get("/", validate("query", booksQuerySchema), getBooks);
 
 router.get("/:id", validate("params", idParamSchema), getBookById);
 

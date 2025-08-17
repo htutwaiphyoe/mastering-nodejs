@@ -54,3 +54,9 @@ export const insertBookSchema = createInsertSchema(booksTable, {
 });
 
 export type InsertBookInput = z.infer<typeof insertBookSchema>;
+
+export const booksQuerySchema = z.object({
+  search: z.string().trim().optional(),
+});
+
+export type BooksQuery = z.infer<typeof booksQuerySchema>;
