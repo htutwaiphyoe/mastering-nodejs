@@ -40,10 +40,6 @@ export const booksTable = pgTable(
   ],
 );
 
-export type Book = typeof booksTable.$inferSelect;
-
-export type NewBook = typeof booksTable.$inferInsert;
-
 export const insertBookSchema = createInsertSchema(booksTable, {
   title: (schema) => schema.min(1).max(255),
   authorId: () => z.uuid(),
