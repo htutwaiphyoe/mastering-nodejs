@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import db from "@/db";
-import { authorsTable } from "./author.model";
+import { authorsTable, type NewAuthor } from "./author.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
 import { eq } from "drizzle-orm";
@@ -31,6 +31,18 @@ export const getAuthorById = async (
   }
 
   res.status(200).json({
+    status: "success",
+    author,
+  });
+};
+
+export const createAuthor = async (
+  req: Request<{}, unknown, NewAuthor>,
+  res: Response,
+) => {
+  const [author] = await db.insert(authorsTable).values(req.body).returning();
+
+  res.status(201).json({
     status: "success",
     author,
   });

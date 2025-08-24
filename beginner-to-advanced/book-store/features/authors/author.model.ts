@@ -1,4 +1,6 @@
 import { date, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 
 export const authorsTable = pgTable("authors", {
   id: uuid().primaryKey().defaultRandom(),
@@ -14,3 +16,18 @@ export const authorsTable = pgTable("authors", {
     .notNull()
     .$onUpdate(() => new Date()),
 });
+
+export const insertAuthorSchema = createInsertSchema(authorsTable, {
+  name: (schema) => schema.min(1).max(255),
+  email: () => z.email().optional(),
+  birthDate: () => z.iso.date().optional(),
+}).pick({
+  name: true,
+  email: true,
+  phone: true,
+  bio: true,
+  nationality: true,
+  birthDate: true,
+});
+
+export type NewAuthor = z.infer<typeof insertAuthorSchema>;

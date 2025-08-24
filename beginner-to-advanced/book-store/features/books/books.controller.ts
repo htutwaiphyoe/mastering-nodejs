@@ -3,7 +3,7 @@ import db from "@/db";
 import {
   booksTable,
   type BooksQuery,
-  type InsertBookInput,
+  type NewBook,
 } from "./books.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
@@ -49,7 +49,7 @@ export const getBookById = async (
 };
 
 export const createBook = async (
-  req: Request<{}, unknown, InsertBookInput>,
+  req: Request<{}, unknown, NewBook>,
   res: Response,
 ) => {
   const [book] = await db.insert(booksTable).values(req.body).returning();
