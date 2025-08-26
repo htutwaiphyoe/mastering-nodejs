@@ -5,7 +5,7 @@ import { z } from "zod";
 export const authorsTable = pgTable("authors", {
   id: uuid().primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
-  email: varchar({ length: 255 }).unique(),
+  email: varchar({ length: 255 }).unique().notNull(),
   phone: varchar({ length: 20 }),
   bio: varchar({ length: 1000 }),
   nationality: varchar({ length: 100 }),
@@ -19,7 +19,7 @@ export const authorsTable = pgTable("authors", {
 
 export const insertAuthorSchema = createInsertSchema(authorsTable, {
   name: (schema) => schema.min(1).max(255),
-  email: () => z.email().optional(),
+  email: () => z.email(),
   birthDate: () => z.iso.date().optional(),
 }).pick({
   name: true,

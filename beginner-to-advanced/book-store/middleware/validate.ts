@@ -6,7 +6,7 @@ type Source = "body" | "params" | "query";
 export const validate =
   (source: Source, schema: ZodType) =>
   (req: Request, res: Response, next: NextFunction) => {
-    const result = schema.safeParse(req[source]);
+    const result = schema.safeParse(req[source] ?? {});
 
     if (!result.success) {
       return res.status(400).json({
