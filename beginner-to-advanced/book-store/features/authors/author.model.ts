@@ -18,9 +18,14 @@ export const authorsTable = pgTable("authors", {
 });
 
 export const insertAuthorSchema = createInsertSchema(authorsTable, {
-  name: (schema) => schema.min(1).max(255),
-  email: () => z.email(),
-  birthDate: () => z.iso.date().optional(),
+  name: () =>
+    z
+      .string("Name is required")
+      .min(1, "Name cannot be empty")
+      .max(255, "Name must be at most 255 characters"),
+  email: () => z.email("Email must be a valid email"),
+  birthDate: () =>
+    z.iso.date("BirthDate must be a valid date (YYYY-MM-DD)").optional(),
 }).pick({
   name: true,
   email: true,
