@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import db from "@/db";
 import { authorsTable, type NewAuthor } from "./author.model";
+import { booksTable } from "@/features/books/books.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
 import { eq } from "drizzle-orm";
@@ -45,5 +46,32 @@ export const createAuthor = async (
   res.status(201).json({
     status: "success",
     author,
+  });
+};
+
+export const getAuthorBooks = async (
+  req: Request<{ id: Uuid }>,
+  res: Response,
+) => {
+  const { id } = req.params;
+
+  const [author] = await db
+    .select()
+    .from(authorsTable)
+    .where(eq(authorsTable.id, id))
+    .limit(1);
+
+  if (!author) {
+    throw ApiError.notFound("Author is not found.");
+  }
+
+  const books = await db
+    .select()
+    .from(booksTable)
+    .where(eq(booksTable.authorId, id));
+
+  res.status(200).json({
+    status: "success",
+    books,
   });
 };

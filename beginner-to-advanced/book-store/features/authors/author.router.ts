@@ -4,6 +4,7 @@ import { idParamSchema } from "@/lib/validators";
 import {
   createAuthor,
   getAllAuthors,
+  getAuthorBooks,
   getAuthorById,
 } from "./author.controller";
 import { insertAuthorSchema } from "./author.model";
@@ -13,6 +14,8 @@ const router = express.Router();
 router.get("/", getAllAuthors);
 
 router.get("/:id", validate("params", idParamSchema), getAuthorById);
+
+router.get("/:id/books", validate("params", idParamSchema), getAuthorBooks);
 
 router.post("/", validate("body", insertAuthorSchema), createAuthor);
 
