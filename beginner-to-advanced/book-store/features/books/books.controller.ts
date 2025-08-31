@@ -1,10 +1,7 @@
 import type { Request, Response } from "express";
 import db from "@/db";
-import {
-  booksTable,
-  type BooksQuery,
-  type NewBook,
-} from "./books.model";
+import { booksTable, type BooksQuery, type NewBook } from "./books.model";
+import { authorsTable } from "@/features/authors/author.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
 import { eq, ilike } from "drizzle-orm";
@@ -32,19 +29,23 @@ export const getBookById = async (
 ) => {
   const { id } = req.params;
 
-  const [book] = await db
+  const [data] = await db
     .select()
     .from(booksTable)
+    .leftJoin(authorsTable, eq(booksTable.authorId, authorsTable.id))
     .where(eq(booksTable.id, id))
     .limit(1);
 
-  if (!book) {
+  if (!data) {
     throw ApiError.notFound("Book is not found.");
   }
 
   res.status(200).json({
     status: "success",
-    book,
+    book: {
+      ...data.books,
+      author: data.authors,
+    },
   });
 };
 
@@ -60,10 +61,7 @@ export const createBook = async (
   });
 };
 
-export const deleteBook = async (
-  req: Request<{ id: Uuid }>,
-  res: Response,
-) => {
+export const deleteBook = async (req: Request<{ id: Uuid }>, res: Response) => {
   const { id } = req.params;
 
   const [book] = await db

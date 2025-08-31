@@ -81,6 +81,16 @@ pgTable("books", { ...columns }, (t) => [
 
 **Watch out:** `drizzle-kit` does not manage Postgres extensions. If your schema uses something like a trigram index, `CREATE EXTENSION pg_trgm` won't be generated for you — you have to add it to the migration SQL by hand.
 
+### Joining tables (leftJoin)
+
+A join lets a single query pull related rows from two tables at once, matching them on a shared value. Since a book stores only its author's id, a join is how you return the whole author alongside the book instead of just that id — the database matches each book to the author whose id equals the book's stored author id, and hands back both together.
+
+The important idea is the difference between a **left** join and an **inner** join. A left join always keeps every row from the "left" (main) table — here, books — even when there's no matching row on the other side; the missing side simply comes back empty. An inner join is stricter: it only returns rows where *both* sides have a match, so a book with no matching author would disappear from the results entirely.
+
+In this project every book has a required author (the foreign key is not-null), so the two kinds of join would behave identically. But a left join is the safer default because it never silently drops your main record just because a related row happens to be missing — you'd rather get the book back with an empty author than get nothing at all. You reach for an inner join only when you specifically *want* to require the match and exclude the unmatched rows.
+
+One practical wrinkle worth remembering: the result of a join isn't a single flat object. It comes back grouped by table — the book's columns under one key, the author's under another — so if you want a tidy response with the author nested inside the book, you reshape it yourself before sending it back.
+
 ## 6. IDs: identity vs UUID
 
 There are two natural choices for a primary key, and they trade off differently:
