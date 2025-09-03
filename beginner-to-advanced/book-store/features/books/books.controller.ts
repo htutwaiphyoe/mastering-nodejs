@@ -1,6 +1,11 @@
 import type { Request, Response } from "express";
 import db from "@/db";
-import { booksTable, type BooksQuery, type NewBook } from "./books.model";
+import {
+  booksTable,
+  type BooksQuery,
+  type NewBook,
+  type UpdateBook,
+} from "./books.model";
 import { authorsTable } from "@/features/authors/author.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
@@ -56,6 +61,28 @@ export const createBook = async (
   const [book] = await db.insert(booksTable).values(req.body).returning();
 
   res.status(201).json({
+    status: "success",
+    book,
+  });
+};
+
+export const updateBook = async (
+  req: Request<{ id: Uuid }, unknown, UpdateBook>,
+  res: Response,
+) => {
+  const { id } = req.params;
+
+  const [book] = await db
+    .update(booksTable)
+    .set(req.body)
+    .where(eq(booksTable.id, id))
+    .returning();
+
+  if (!book) {
+    throw ApiError.notFound("Book is not found.");
+  }
+
+  res.status(200).json({
     status: "success",
     book,
   });

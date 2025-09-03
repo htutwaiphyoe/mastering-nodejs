@@ -21,7 +21,7 @@ export const insertAuthorSchema = createInsertSchema(authorsTable, {
   name: () =>
     z
       .string("Name is required")
-      .min(1, "Name cannot be empty")
+      .min(1, "Name is required")
       .max(255, "Name must be at most 255 characters"),
   email: () => z.email("Email must be a valid email"),
   birthDate: () =>

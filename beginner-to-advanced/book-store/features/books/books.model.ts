@@ -44,7 +44,7 @@ export const insertBookSchema = createInsertSchema(booksTable, {
   title: () =>
     z
       .string("Title is required")
-      .min(1, "Title cannot be empty")
+      .min(1, "Title is required")
       .max(255, "Title must be at most 255 characters"),
   authorId: () => z.uuid("AuthorId must be a valid UUID"),
   price: () =>
@@ -70,6 +70,14 @@ export const insertBookSchema = createInsertSchema(booksTable, {
 });
 
 export type NewBook = z.infer<typeof insertBookSchema>;
+
+export const updateBookSchema = insertBookSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field is required to update.",
+  });
+
+export type UpdateBook = z.infer<typeof updateBookSchema>;
 
 export const booksQuerySchema = z.object({
   search: z.string().trim().optional(),
