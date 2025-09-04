@@ -2,28 +2,36 @@ import type { Request, Response } from "express";
 import db from "@/db";
 import {
   booksTable,
-  type BooksQuery,
+  booksQuerySchema,
   type NewBook,
   type UpdateBook,
 } from "./books.model";
 import { authorsTable } from "@/features/authors/author.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
-import { eq, ilike } from "drizzle-orm";
+import { count, eq, ilike } from "drizzle-orm";
 
-export const getBooks = async (
-  req: Request<{}, unknown, unknown, BooksQuery>,
-  res: Response,
-) => {
-  const { search } = req.query;
+export const getBooks = async (req: Request, res: Response) => {
+  const { search, page, limit } = booksQuerySchema.parse(req.query);
+  const offset = (page - 1) * limit;
 
-  const books = await db
-    .select()
-    .from(booksTable)
-    .where(search ? ilike(booksTable.title, `%${search}%`) : undefined);
+  const where = search
+    ? ilike(booksTable.title, `%${search}%`)
+    : undefined;
+
+  const [books, [{ total }]] = await Promise.all([
+    db.select().from(booksTable).where(where).limit(limit).offset(offset),
+    db.select({ total: count() }).from(booksTable).where(where),
+  ]);
 
   res.status(200).json({
     status: "success",
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
     books,
   });
 };
