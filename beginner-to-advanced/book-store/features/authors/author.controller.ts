@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
 import db from "@/db";
-import { authorsTable, type NewAuthor } from "./author.model";
+import {
+  authorsTable,
+  type NewAuthor,
+  type UpdateAuthor,
+} from "./author.model";
 import { booksTable } from "@/features/books/books.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
@@ -44,6 +48,28 @@ export const createAuthor = async (
   const [author] = await db.insert(authorsTable).values(req.body).returning();
 
   res.status(201).json({
+    status: "success",
+    author,
+  });
+};
+
+export const updateAuthor = async (
+  req: Request<{ id: Uuid }, unknown, UpdateAuthor>,
+  res: Response,
+) => {
+  const { id } = req.params;
+
+  const [author] = await db
+    .update(authorsTable)
+    .set(req.body)
+    .where(eq(authorsTable.id, id))
+    .returning();
+
+  if (!author) {
+    throw ApiError.notFound("Author is not found.");
+  }
+
+  res.status(200).json({
     status: "success",
     author,
   });

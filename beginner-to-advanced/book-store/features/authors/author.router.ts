@@ -6,8 +6,9 @@ import {
   getAllAuthors,
   getAuthorBooks,
   getAuthorById,
+  updateAuthor,
 } from "./author.controller";
-import { insertAuthorSchema } from "./author.model";
+import { insertAuthorSchema, updateAuthorSchema } from "./author.model";
 
 const router = express.Router();
 
@@ -18,5 +19,12 @@ router.get("/:id", validate("params", idParamSchema), getAuthorById);
 router.get("/:id/books", validate("params", idParamSchema), getAuthorBooks);
 
 router.post("/", validate("body", insertAuthorSchema), createAuthor);
+
+router.patch(
+  "/:id",
+  validate("params", idParamSchema),
+  validate("body", updateAuthorSchema),
+  updateAuthor,
+);
 
 export default router;

@@ -36,3 +36,11 @@ export const insertAuthorSchema = createInsertSchema(authorsTable, {
 });
 
 export type NewAuthor = z.infer<typeof insertAuthorSchema>;
+
+export const updateAuthorSchema = insertAuthorSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field is required to update.",
+  });
+
+export type UpdateAuthor = z.infer<typeof updateAuthorSchema>;
