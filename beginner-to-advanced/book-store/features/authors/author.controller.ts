@@ -8,10 +8,13 @@ import {
 import { booksTable } from "@/features/books/books.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 
 export const getAllAuthors = async (req: Request, res: Response) => {
-  const authors = await db.select().from(authorsTable);
+  const authors = await db
+    .select()
+    .from(authorsTable)
+    .where(isNull(authorsTable.deletedAt));
 
   res.status(200).json({
     status: "success",
@@ -28,7 +31,7 @@ export const getAuthorById = async (
   const [author] = await db
     .select()
     .from(authorsTable)
-    .where(eq(authorsTable.id, id))
+    .where(and(eq(authorsTable.id, id), isNull(authorsTable.deletedAt)))
     .limit(1);
 
   if (!author) {
@@ -62,7 +65,7 @@ export const updateAuthor = async (
   const [author] = await db
     .update(authorsTable)
     .set(req.body)
-    .where(eq(authorsTable.id, id))
+    .where(and(eq(authorsTable.id, id), isNull(authorsTable.deletedAt)))
     .returning();
 
   if (!author) {
@@ -75,6 +78,27 @@ export const updateAuthor = async (
   });
 };
 
+export const deleteAuthor = async (
+  req: Request<{ id: Uuid }>,
+  res: Response,
+) => {
+  const { id } = req.params;
+
+  const [author] = await db
+    .update(authorsTable)
+    .set({ deletedAt: new Date() })
+    .where(and(eq(authorsTable.id, id), isNull(authorsTable.deletedAt)))
+    .returning();
+
+  if (!author) {
+    throw ApiError.notFound("Author is not found.");
+  }
+
+  res.status(200).json({
+    status: "success",
+  });
+};
+
 export const getAuthorBooks = async (
   req: Request<{ id: Uuid }>,
   res: Response,
@@ -84,7 +108,7 @@ export const getAuthorBooks = async (
   const [author] = await db
     .select()
     .from(authorsTable)
-    .where(eq(authorsTable.id, id))
+    .where(and(eq(authorsTable.id, id), isNull(authorsTable.deletedAt)))
     .limit(1);
 
   if (!author) {

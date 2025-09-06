@@ -15,6 +15,7 @@ export const authorsTable = pgTable("authors", {
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),
+  deletedAt: timestamp(),
 });
 
 export const insertAuthorSchema = createInsertSchema(authorsTable, {

@@ -3,6 +3,7 @@ import { validate } from "@/middleware/validate";
 import { idParamSchema } from "@/lib/validators";
 import {
   createAuthor,
+  deleteAuthor,
   getAllAuthors,
   getAuthorBooks,
   getAuthorById,
@@ -26,5 +27,7 @@ router.patch(
   validate("body", updateAuthorSchema),
   updateAuthor,
 );
+
+router.delete("/:id", validate("params", idParamSchema), deleteAuthor);
 
 export default router;

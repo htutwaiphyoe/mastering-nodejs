@@ -172,6 +172,18 @@ A bare `YYYY-MM-DD` is rejected for `GIT_COMMITTER_DATE`, so give it a full time
 
 **Watch out:** GitHub's push protection blocks secrets before they ever land — including a public Mapbox `pk.` token. The way out is to scrub the token to a placeholder and amend, or explicitly allow it via the unblock URL in the error. And a broader lesson from debugging: when a stack trace lives entirely inside `node_modules` with none of your own files in it, the bug is almost always in a dependency or the runtime, not your code.
 
+## 11. Deleting data: soft delete & keeping history
+
+Deleting a record that other records point to is one of the most consequential decisions in a schema, because a foreign key can turn one delete into many. When a book references an author, the database needs to know what to do to the books if that author is removed. The options range from destructive to protective: a **cascade** deletes the author and all their books along with them; a **restrict** refuses the delete while any book still points at the author; a **set null** keeps the books but empties their author link; and **soft delete** sidesteps the whole question by never actually removing anything.
+
+The safest default for anything meaningful is **soft delete**. Instead of a real `DELETE`, you add a `deletedAt` timestamp column and simply set it when something is "deleted." The row stays in the database, so nothing is destroyed and everything is reversible — you're just hiding it. The catch is that *every* read has to remember to filter out the hidden rows (`where deletedAt is null`); miss one query and "deleted" records leak back into the app. There's also a subtle side effect: a unique column like email is still occupied by a soft-deleted row, so that value can't be reused unless you make the uniqueness apply only to non-deleted rows.
+
+The reason all of this matters becomes vivid once you imagine a customer who has already **bought** a book. Now the chain is order → book → author, and deleting the author is no longer just an author problem. A cascade would delete the author, then the books, and suddenly an order points at a product that no longer exists — the receipt and purchase history break, which for a real store is a legal and accounting disaster. Soft delete avoids this because the whole chain stays intact; the author is merely hidden from listings.
+
+But the deeper principle worth remembering is that **transactional records should not depend on live catalog data at all.** An order is a historical fact: it must show what was bought, and the price that was actually paid, forever — regardless of what happens to the book or author afterward. So a well-designed order doesn't just link to the book and read its current title and price; it **stores a snapshot** of those values at the moment of purchase. Prices change, titles get corrected, records get removed — but the receipt must never change. The foreign key becomes a convenience link, while the snapshot is the source of truth.
+
+The rule of thumb that falls out of this: **catalog data** (books, authors) can be edited or hidden, so it's fine to soft-delete and reference live; **transactional data** (orders) is append-only and self-contained, so it snapshots what it needs and never lets a later change rewrite history.
+
 ---
 
 *Field notes from building the Book Store API — kept as a quick reference for next time.*
