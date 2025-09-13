@@ -9,18 +9,34 @@ import {
 import { authorsTable } from "@/features/authors/author.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
-import { count, eq, ilike } from "drizzle-orm";
+import { asc, count, desc, eq, ilike } from "drizzle-orm";
+
+const SORTABLE = {
+  title: booksTable.title,
+  price: booksTable.price,
+  publishedDate: booksTable.publishedDate,
+  stock: booksTable.stock,
+  createdAt: booksTable.createdAt,
+};
 
 export const getBooks = async (req: Request, res: Response) => {
-  const { search, page, limit } = booksQuerySchema.parse(req.query);
+  const { search, page, limit, sortBy, orderBy } = booksQuerySchema.parse(
+    req.query,
+  );
   const offset = (page - 1) * limit;
 
-  const where = search
-    ? ilike(booksTable.title, `%${search}%`)
-    : undefined;
+  const where = search ? ilike(booksTable.title, `%${search}%`) : undefined;
+
+  const $orderBy = (orderBy === "asc" ? asc : desc)(SORTABLE[sortBy]);
 
   const [books, [{ total }]] = await Promise.all([
-    db.select().from(booksTable).where(where).limit(limit).offset(offset),
+    db
+      .select()
+      .from(booksTable)
+      .where(where)
+      .orderBy($orderBy)
+      .limit(limit)
+      .offset(offset),
     db.select({ total: count() }).from(booksTable).where(where),
   ]);
 
