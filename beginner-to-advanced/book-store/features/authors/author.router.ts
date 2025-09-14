@@ -9,11 +9,15 @@ import {
   getAuthorById,
   updateAuthor,
 } from "./author.controller";
-import { insertAuthorSchema, updateAuthorSchema } from "./author.model";
+import {
+  authorsQuerySchema,
+  insertAuthorSchema,
+  updateAuthorSchema,
+} from "./author.model";
 
 const router = express.Router();
 
-router.get("/", getAllAuthors);
+router.get("/", validate("query", authorsQuerySchema), getAllAuthors);
 
 router.get("/:id", validate("params", idParamSchema), getAuthorById);
 

@@ -2,22 +2,34 @@ import type { Request, Response } from "express";
 import db from "@/db";
 import {
   authorsTable,
+  authorsQuerySchema,
   type NewAuthor,
   type UpdateAuthor,
 } from "./author.model";
 import { booksTable } from "@/features/books/books.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, count, eq, isNull } from "drizzle-orm";
 
 export const getAllAuthors = async (req: Request, res: Response) => {
-  const authors = await db
-    .select()
-    .from(authorsTable)
-    .where(isNull(authorsTable.deletedAt));
+  const { page, limit } = authorsQuerySchema.parse(req.query);
+  const offset = (page - 1) * limit;
+
+  const where = isNull(authorsTable.deletedAt);
+
+  const [authors, [{ total }]] = await Promise.all([
+    db.select().from(authorsTable).where(where).limit(limit).offset(offset),
+    db.select({ total: count() }).from(authorsTable).where(where),
+  ]);
 
   res.status(200).json({
     status: "success",
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
     authors,
   });
 };
