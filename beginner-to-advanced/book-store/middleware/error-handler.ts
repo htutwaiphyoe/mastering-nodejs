@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { ApiError } from "@/lib/api-error";
+import { getPgConstraint, getPgErrorCode } from "@/lib/db-error";
 
 export const notFoundHandler = (req: Request, res: Response) => {
   res.status(404).json({
@@ -15,6 +16,12 @@ const PG_ERRORS: Record<string, { status: number; message: string }> = {
   "23514": { status: 400, message: "A field failed a constraint check." }, // check_violation
 };
 
+const CONSTRAINT_MESSAGES: Record<string, string> = {
+  users_email_key: "Email already registered.",
+  authors_email_key: "An author with this email already exists.",
+  books_isbn_key: "A book with this ISBN already exists.",
+};
+
 export const errorHandler = (
   err: unknown,
   req: Request,
@@ -28,16 +35,17 @@ export const errorHandler = (
     });
   }
 
-  const pgCode =
-    (err as { code?: string })?.code ??
-    (err as { cause?: { code?: string } })?.cause?.code;
+  const pgCode = getPgErrorCode(err);
 
   if (pgCode && PG_ERRORS[pgCode]) {
     const { status, message } = PG_ERRORS[pgCode];
+    const constraint = getPgConstraint(err);
+    const friendlyMessage =
+      (constraint && CONSTRAINT_MESSAGES[constraint]) || message;
 
     return res.status(status).json({
       status: "error",
-      message,
+      message: friendlyMessage,
     });
   }
 
