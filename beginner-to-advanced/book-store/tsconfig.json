@@ -3,7 +3,7 @@
     "module": "preserve",
     "moduleResolution": "bundler",
     "target": "esnext",
-    "types": ["node"],
+    "types": ["node", "bun"],
     "paths": {
       "@/*": ["./*"]
     },
