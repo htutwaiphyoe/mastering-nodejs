@@ -40,6 +40,13 @@ export const signupSchema = createInsertSchema(usersTable, {
 
 export type SignupInput = z.infer<typeof signupSchema>;
 
+export const loginSchema = z.object({
+  email: z.email("Email must be a valid email"),
+  password: z.string("Password is required").min(1, "Password is required"),
+});
+
+export type LoginInput = z.infer<typeof loginSchema>;
+
 export const publicUserColumns = {
   id: usersTable.id,
   name: usersTable.name,

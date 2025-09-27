@@ -18,4 +18,8 @@ export class ApiError extends Error {
   static conflict(message = "Resource already exists.") {
     return new ApiError(409, message);
   }
+
+  static unauthenticated(message = "Unauthenticated.") {
+    return new ApiError(401, message);
+  }
 }

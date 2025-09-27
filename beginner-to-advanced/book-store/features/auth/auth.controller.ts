@@ -1,11 +1,15 @@
 import type { Request, Response } from "express";
+import { and, eq, isNull } from "drizzle-orm";
 import db from "@/db";
 import {
   usersTable,
   publicUserColumns,
   type SignupInput,
+  type LoginInput,
 } from "@/features/users/user.model";
-import { hashPassword } from "@/lib/password";
+import { hashPassword, verifyPassword } from "@/lib/password";
+import { signToken } from "@/lib/jwt";
+import { ApiError } from "@/lib/api-error";
 
 export const signup = async (
   req: Request<{}, unknown, SignupInput>,
@@ -23,5 +27,32 @@ export const signup = async (
   res.status(201).json({
     status: "success",
     user,
+  });
+};
+
+export const login = async (
+  req: Request<{}, unknown, LoginInput>,
+  res: Response,
+) => {
+  const { email, password } = req.body;
+
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(and(eq(usersTable.email, email), isNull(usersTable.deactivatedAt)))
+    .limit(1);
+
+  if (!user || !(await verifyPassword(password, user.password))) {
+    throw ApiError.unauthenticated("Invalid email or password.");
+  }
+
+  const token = signToken({ sub: user.id });
+
+  const { password: _password, ...safeUser } = user;
+
+  res.status(200).json({
+    status: "success",
+    token,
+    user: safeUser,
   });
 };
