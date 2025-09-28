@@ -56,3 +56,8 @@ export const publicUserColumns = {
   createdAt: usersTable.createdAt,
   updatedAt: usersTable.updatedAt,
 };
+
+export type PublicUser = Pick<
+  typeof usersTable.$inferSelect,
+  "id" | "name" | "email" | "dob" | "profileUrl" | "createdAt" | "updatedAt"
+>;
