@@ -1,6 +1,17 @@
-import { date, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import {
+  date,
+  pgEnum,
+  pgTable,
+  timestamp,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
+
+export type UserRole = (typeof userRoleEnum.enumValues)[number];
 
 export const usersTable = pgTable("users", {
   id: uuid().primaryKey().defaultRandom(),
@@ -9,6 +20,7 @@ export const usersTable = pgTable("users", {
   dob: date(),
   password: varchar({ length: 255 }).notNull(),
   profileUrl: varchar({ length: 500 }),
+  role: userRoleEnum().notNull().default("user"),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp()
     .defaultNow()
@@ -53,11 +65,19 @@ export const publicUserColumns = {
   email: usersTable.email,
   dob: usersTable.dob,
   profileUrl: usersTable.profileUrl,
+  role: usersTable.role,
   createdAt: usersTable.createdAt,
   updatedAt: usersTable.updatedAt,
 };
 
 export type PublicUser = Pick<
   typeof usersTable.$inferSelect,
-  "id" | "name" | "email" | "dob" | "profileUrl" | "createdAt" | "updatedAt"
+  | "id"
+  | "name"
+  | "email"
+  | "dob"
+  | "profileUrl"
+  | "role"
+  | "createdAt"
+  | "updatedAt"
 >;
