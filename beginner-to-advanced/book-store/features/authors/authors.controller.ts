@@ -5,7 +5,7 @@ import {
   authorsQuerySchema,
   type NewAuthor,
   type UpdateAuthor,
-} from "./author.model";
+} from "./authors.model";
 import { booksTable } from "@/features/books/books.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";

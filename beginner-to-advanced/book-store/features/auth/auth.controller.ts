@@ -6,7 +6,7 @@ import {
   publicUserColumns,
   type SignupInput,
   type LoginInput,
-} from "@/features/users/user.model";
+} from "@/features/users/users.model";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { signToken } from "@/lib/jwt";
 import { ApiError } from "@/lib/api-error";

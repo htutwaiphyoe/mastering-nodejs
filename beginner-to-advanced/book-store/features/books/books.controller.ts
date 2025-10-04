@@ -6,7 +6,7 @@ import {
   type NewBook,
   type UpdateBook,
 } from "./books.model";
-import { authorsTable } from "@/features/authors/author.model";
+import { authorsTable } from "@/features/authors/authors.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
 import { asc, count, desc, eq, ilike } from "drizzle-orm";

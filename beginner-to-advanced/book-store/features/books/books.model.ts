@@ -11,7 +11,7 @@ import {
 import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { authorsTable } from "@/features/authors/author.model";
+import { authorsTable } from "@/features/authors/authors.model";
 
 export const booksTable = pgTable(
   "books",

@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import type { UserRole } from "@/features/users/user.model";
+import type { UserRole } from "@/features/users/users.model";
 import { ApiError } from "@/lib/api-error";
 
 export const authorize =

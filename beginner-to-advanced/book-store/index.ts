@@ -1,9 +1,9 @@
 import "dotenv/config";
 import express from "express";
-import bookRouter from "@/features/books/books.router";
-import authorRouter from "@/features/authors/author.router";
-import authRouter from "@/features/auth/auth.router";
-import userRouter from "@/features/users/user.router";
+import bookRouter from "@/features/books/books.route";
+import authorRouter from "@/features/authors/authors.route";
+import authRouter from "@/features/auth/auth.route";
+import userRouter from "@/features/users/users.route";
 import { errorHandler, notFoundHandler } from "@/middleware/error-handler";
 
 const app = express();

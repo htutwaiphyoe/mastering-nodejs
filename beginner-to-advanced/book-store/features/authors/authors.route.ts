@@ -8,12 +8,12 @@ import {
   getAuthorBooks,
   getAuthorById,
   updateAuthor,
-} from "./author.controller";
+} from "./authors.controller";
 import {
   authorsQuerySchema,
   insertAuthorSchema,
   updateAuthorSchema,
-} from "./author.model";
+} from "./authors.model";
 
 const router = express.Router();
 

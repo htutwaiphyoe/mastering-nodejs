@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { and, eq, isNull } from "drizzle-orm";
 import db from "@/db";
-import { usersTable, publicUserColumns } from "@/features/users/user.model";
+import { usersTable, publicUserColumns } from "@/features/users/users.model";
 import { verifyToken } from "@/lib/jwt";
 import { ApiError } from "@/lib/api-error";
 

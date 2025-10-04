@@ -1,4 +1,4 @@
-import type { PublicUser } from "@/features/users/user.model";
+import type { PublicUser } from "@/features/users/users.model";
 
 declare global {
   namespace Express {

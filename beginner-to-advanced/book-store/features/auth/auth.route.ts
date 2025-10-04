@@ -1,6 +1,6 @@
 import express from "express";
 import { validate } from "@/middleware/validate";
-import { signupSchema, loginSchema } from "@/features/users/user.model";
+import { signupSchema, loginSchema } from "@/features/users/users.model";
 import { signup, login } from "./auth.controller";
 
 const router = express.Router();
