@@ -52,6 +52,27 @@ export const signupSchema = createInsertSchema(usersTable, {
 
 export type SignupInput = z.infer<typeof signupSchema>;
 
+export const updateUserSchema = createInsertSchema(usersTable, {
+  name: () =>
+    z
+      .string("Name is required")
+      .min(1, "Name is required")
+      .max(255, "Name must be at most 255 characters"),
+  dob: () => z.iso.date("DOB must be a valid date (YYYY-MM-DD)").optional(),
+  profileUrl: () => z.url("Profile URL must be a valid URL").optional(),
+})
+  .pick({
+    name: true,
+    dob: true,
+    profileUrl: true,
+  })
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field is required to update.",
+  });
+
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
 export const loginSchema = z.object({
   email: z.email("Email must be a valid email"),
   password: z.string("Password is required").min(1, "Password is required"),
