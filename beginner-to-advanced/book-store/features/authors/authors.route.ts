@@ -1,5 +1,7 @@
 import express from "express";
 import { validate } from "@/middleware/validate";
+import { authenticate } from "@/middleware/authenticate";
+import { authorize } from "@/middleware/authorize";
 import { idParamSchema } from "@/lib/validators";
 import {
   createAuthor,
@@ -23,15 +25,29 @@ router.get("/:id", validate("params", idParamSchema), getAuthorById);
 
 router.get("/:id/books", validate("params", idParamSchema), getAuthorBooks);
 
-router.post("/", validate("body", insertAuthorSchema), createAuthor);
+router.post(
+  "/",
+  authenticate,
+  authorize("admin"),
+  validate("body", insertAuthorSchema),
+  createAuthor,
+);
 
 router.patch(
   "/:id",
+  authenticate,
+  authorize("admin"),
   validate("params", idParamSchema),
   validate("body", updateAuthorSchema),
   updateAuthor,
 );
 
-router.delete("/:id", validate("params", idParamSchema), deleteAuthor);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize("admin"),
+  validate("params", idParamSchema),
+  deleteAuthor,
+);
 
 export default router;
