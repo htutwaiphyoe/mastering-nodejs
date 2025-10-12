@@ -1,9 +1,16 @@
 import express from "express";
 import { authenticate } from "@/middleware/authenticate";
+import { authorize } from "@/middleware/authorize";
 import { validate } from "@/middleware/validate";
 import { idParamSchema } from "@/lib/validators";
 import { updateUserSchema } from "./users.model";
-import { me, getUserById, updateUser } from "./users.controller";
+import {
+  me,
+  getUserById,
+  updateUser,
+  deactivateUser,
+  reactivateUser,
+} from "./users.controller";
 
 const router = express.Router();
 
@@ -17,6 +24,21 @@ router.patch(
   validate("params", idParamSchema),
   validate("body", updateUserSchema),
   updateUser,
+);
+
+router.patch(
+  "/:id/deactivate",
+  authenticate,
+  validate("params", idParamSchema),
+  deactivateUser,
+);
+
+router.patch(
+  "/:id/reactivate",
+  authenticate,
+  authorize("admin"),
+  validate("params", idParamSchema),
+  reactivateUser,
 );
 
 export default router;

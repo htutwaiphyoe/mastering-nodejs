@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import db from "@/db";
 import {
   usersTable,
@@ -31,6 +31,55 @@ export const getUserById = async (
 
   if (!user) {
     throw ApiError.notFound("User is not found.");
+  }
+
+  res.status(200).json({
+    status: "success",
+    user,
+  });
+};
+
+export const deactivateUser = async (
+  req: Request<{ id: Uuid }>,
+  res: Response,
+) => {
+  const { id } = req.params;
+  const currentUser = getCurrentUser(req);
+
+  if (currentUser.id !== id && currentUser.role !== "admin") {
+    throw ApiError.forbidden("You can only deactivate your own account.");
+  }
+
+  const [user] = await db
+    .update(usersTable)
+    .set({ deactivatedAt: new Date() })
+    .where(and(eq(usersTable.id, id), isNull(usersTable.deactivatedAt)))
+    .returning(publicUserColumns);
+
+  if (!user) {
+    throw ApiError.notFound("Active user is not found.");
+  }
+
+  res.status(200).json({
+    status: "success",
+    user,
+  });
+};
+
+export const reactivateUser = async (
+  req: Request<{ id: Uuid }>,
+  res: Response,
+) => {
+  const { id } = req.params;
+
+  const [user] = await db
+    .update(usersTable)
+    .set({ deactivatedAt: null })
+    .where(and(eq(usersTable.id, id), isNotNull(usersTable.deactivatedAt)))
+    .returning(publicUserColumns);
+
+  if (!user) {
+    throw ApiError.notFound("Deactivated user is not found.");
   }
 
   res.status(200).json({
