@@ -5,6 +5,7 @@ import {
   usersTable,
   publicUserColumns,
   type UpdateUserInput,
+  type UpdateUserRoleInput,
 } from "./users.model";
 import type { Uuid } from "@/lib/validators";
 import { getCurrentUser } from "@/lib/current-user";
@@ -107,6 +108,34 @@ export const updateUser = async (
 
   if (!user) {
     throw ApiError.notFound("User is not found.");
+  }
+
+  res.status(200).json({
+    status: "success",
+    user,
+  });
+};
+
+export const updateUserRole = async (
+  req: Request<{ id: Uuid }, unknown, UpdateUserRoleInput>,
+  res: Response,
+) => {
+  const { id } = req.params;
+  const { role } = req.body;
+  const currentUser = getCurrentUser(req);
+
+  if (currentUser.id === id) {
+    throw ApiError.forbidden("You cannot change your own role.");
+  }
+
+  const [user] = await db
+    .update(usersTable)
+    .set({ role })
+    .where(and(eq(usersTable.id, id), isNull(usersTable.deactivatedAt)))
+    .returning(publicUserColumns);
+
+  if (!user) {
+    throw ApiError.notFound("Active user is not found.");
   }
 
   res.status(200).json({

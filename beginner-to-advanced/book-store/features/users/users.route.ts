@@ -3,13 +3,14 @@ import { authenticate } from "@/middleware/authenticate";
 import { authorize } from "@/middleware/authorize";
 import { validate } from "@/middleware/validate";
 import { idParamSchema } from "@/lib/validators";
-import { updateUserSchema } from "./users.model";
+import { updateUserSchema, updateUserRoleSchema } from "./users.model";
 import {
   me,
   getUserById,
   updateUser,
   deactivateUser,
   reactivateUser,
+  updateUserRole,
 } from "./users.controller";
 
 const router = express.Router();
@@ -39,6 +40,15 @@ router.patch(
   authorize("admin"),
   validate("params", idParamSchema),
   reactivateUser,
+);
+
+router.patch(
+  "/:id/role",
+  authenticate,
+  authorize("admin"),
+  validate("params", idParamSchema),
+  validate("body", updateUserRoleSchema),
+  updateUserRole,
 );
 
 export default router;

@@ -12,6 +12,7 @@ import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { authorsTable } from "@/features/authors/authors.model";
+import { usersTable } from "@/features/users/users.model";
 
 export const booksTable = pgTable(
   "books",
@@ -26,6 +27,7 @@ export const booksTable = pgTable(
     price: numeric({ precision: 10, scale: 2 }).notNull(),
     publishedDate: date().notNull(),
     stock: integer().notNull().default(0),
+    createdBy: uuid().references(() => usersTable.id),
     createdAt: timestamp().defaultNow().notNull(),
     updatedAt: timestamp()
       .defaultNow()

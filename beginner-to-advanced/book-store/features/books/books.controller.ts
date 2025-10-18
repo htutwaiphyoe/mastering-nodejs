@@ -9,6 +9,8 @@ import {
 import { authorsTable } from "@/features/authors/authors.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
+import { getCurrentUser } from "@/lib/current-user";
+import { assertOwnership } from "@/lib/ownership";
 import { asc, count, desc, eq, ilike } from "drizzle-orm";
 
 const SORTABLE = {
@@ -82,7 +84,12 @@ export const createBook = async (
   req: Request<{}, unknown, NewBook>,
   res: Response,
 ) => {
-  const [book] = await db.insert(booksTable).values(req.body).returning();
+  const currentUser = getCurrentUser(req);
+
+  const [book] = await db
+    .insert(booksTable)
+    .values({ ...req.body, createdBy: currentUser.id })
+    .returning();
 
   res.status(201).json({
     status: "success",
@@ -95,16 +102,25 @@ export const updateBook = async (
   res: Response,
 ) => {
   const { id } = req.params;
+  const currentUser = getCurrentUser(req);
+
+  const [existing] = await db
+    .select({ createdBy: booksTable.createdBy })
+    .from(booksTable)
+    .where(eq(booksTable.id, id))
+    .limit(1);
+
+  if (!existing) {
+    throw ApiError.notFound("Book is not found.");
+  }
+
+  assertOwnership(currentUser, existing.createdBy);
 
   const [book] = await db
     .update(booksTable)
     .set(req.body)
     .where(eq(booksTable.id, id))
     .returning();
-
-  if (!book) {
-    throw ApiError.notFound("Book is not found.");
-  }
 
   res.status(200).json({
     status: "success",
@@ -114,15 +130,21 @@ export const updateBook = async (
 
 export const deleteBook = async (req: Request<{ id: Uuid }>, res: Response) => {
   const { id } = req.params;
+  const currentUser = getCurrentUser(req);
 
-  const [book] = await db
-    .delete(booksTable)
+  const [existing] = await db
+    .select({ createdBy: booksTable.createdBy })
+    .from(booksTable)
     .where(eq(booksTable.id, id))
-    .returning();
+    .limit(1);
 
-  if (!book) {
+  if (!existing) {
     throw ApiError.notFound("Book is not found.");
   }
+
+  assertOwnership(currentUser, existing.createdBy);
+
+  await db.delete(booksTable).where(eq(booksTable.id, id));
 
   res.status(200).json({
     status: "success",

@@ -28,7 +28,7 @@ router.get("/:id/books", validate("params", idParamSchema), getAuthorBooks);
 router.post(
   "/",
   authenticate,
-  authorize("admin"),
+  authorize("admin", "publisher"),
   validate("body", insertAuthorSchema),
   createAuthor,
 );
@@ -36,7 +36,7 @@ router.post(
 router.patch(
   "/:id",
   authenticate,
-  authorize("admin"),
+  authorize("admin", "publisher"),
   validate("params", idParamSchema),
   validate("body", updateAuthorSchema),
   updateAuthor,
@@ -45,7 +45,7 @@ router.patch(
 router.delete(
   "/:id",
   authenticate,
-  authorize("admin"),
+  authorize("admin", "publisher"),
   validate("params", idParamSchema),
   deleteAuthor,
 );

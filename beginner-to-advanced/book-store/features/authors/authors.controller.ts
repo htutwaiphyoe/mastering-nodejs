@@ -9,6 +9,8 @@ import {
 import { booksTable } from "@/features/books/books.model";
 import type { Uuid } from "@/lib/validators";
 import { ApiError } from "@/lib/api-error";
+import { getCurrentUser } from "@/lib/current-user";
+import { assertOwnership } from "@/lib/ownership";
 import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
 
 const SORTABLE = {
@@ -75,7 +77,12 @@ export const createAuthor = async (
   req: Request<{}, unknown, NewAuthor>,
   res: Response,
 ) => {
-  const [author] = await db.insert(authorsTable).values(req.body).returning();
+  const currentUser = getCurrentUser(req);
+
+  const [author] = await db
+    .insert(authorsTable)
+    .values({ ...req.body, createdBy: currentUser.id })
+    .returning();
 
   res.status(201).json({
     status: "success",
@@ -88,16 +95,25 @@ export const updateAuthor = async (
   res: Response,
 ) => {
   const { id } = req.params;
+  const currentUser = getCurrentUser(req);
+
+  const [existing] = await db
+    .select({ createdBy: authorsTable.createdBy })
+    .from(authorsTable)
+    .where(and(eq(authorsTable.id, id), isNull(authorsTable.deletedAt)))
+    .limit(1);
+
+  if (!existing) {
+    throw ApiError.notFound("Author is not found.");
+  }
+
+  assertOwnership(currentUser, existing.createdBy);
 
   const [author] = await db
     .update(authorsTable)
     .set(req.body)
-    .where(and(eq(authorsTable.id, id), isNull(authorsTable.deletedAt)))
+    .where(eq(authorsTable.id, id))
     .returning();
-
-  if (!author) {
-    throw ApiError.notFound("Author is not found.");
-  }
 
   res.status(200).json({
     status: "success",
@@ -110,16 +126,24 @@ export const deleteAuthor = async (
   res: Response,
 ) => {
   const { id } = req.params;
+  const currentUser = getCurrentUser(req);
 
-  const [author] = await db
-    .update(authorsTable)
-    .set({ deletedAt: new Date() })
+  const [existing] = await db
+    .select({ createdBy: authorsTable.createdBy })
+    .from(authorsTable)
     .where(and(eq(authorsTable.id, id), isNull(authorsTable.deletedAt)))
-    .returning();
+    .limit(1);
 
-  if (!author) {
+  if (!existing) {
     throw ApiError.notFound("Author is not found.");
   }
+
+  assertOwnership(currentUser, existing.createdBy);
+
+  await db
+    .update(authorsTable)
+    .set({ deletedAt: new Date() })
+    .where(eq(authorsTable.id, id));
 
   res.status(200).json({
     status: "success",

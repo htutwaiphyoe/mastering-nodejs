@@ -9,7 +9,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
+export const userRoleEnum = pgEnum("user_role", ["admin", "user", "publisher"]);
 
 export type UserRole = (typeof userRoleEnum.enumValues)[number];
 
@@ -72,6 +72,12 @@ export const updateUserSchema = createInsertSchema(usersTable, {
   });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+export const updateUserRoleSchema = z.object({
+  role: z.enum(userRoleEnum.enumValues),
+});
+
+export type UpdateUserRoleInput = z.infer<typeof updateUserRoleSchema>;
 
 export const loginSchema = z.object({
   email: z.email("Email must be a valid email"),
