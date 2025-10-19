@@ -51,15 +51,25 @@ export const deactivateUser = async (
     throw ApiError.forbidden("You can only deactivate your own account.");
   }
 
+  const [target] = await db
+    .select({ role: usersTable.role })
+    .from(usersTable)
+    .where(and(eq(usersTable.id, id), isNull(usersTable.deactivatedAt)))
+    .limit(1);
+
+  if (!target) {
+    throw ApiError.notFound("Active user is not found.");
+  }
+
+  if (target.role === "admin") {
+    throw ApiError.forbidden("This account cannot be deactivated.");
+  }
+
   const [user] = await db
     .update(usersTable)
     .set({ deactivatedAt: new Date() })
     .where(and(eq(usersTable.id, id), isNull(usersTable.deactivatedAt)))
     .returning(publicUserColumns);
-
-  if (!user) {
-    throw ApiError.notFound("Active user is not found.");
-  }
 
   res.status(200).json({
     status: "success",
