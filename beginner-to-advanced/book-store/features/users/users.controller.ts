@@ -8,8 +8,8 @@ import {
   type UpdateUserRoleInput,
 } from "./users.model";
 import type { Uuid } from "@/lib/validators";
-import { getCurrentUser } from "@/lib/current-user";
-import { ApiError } from "@/lib/api-error";
+import { getCurrentUser } from "@/lib/user";
+import { ApiError } from "@/lib/error";
 
 export const me = (req: Request, res: Response) => {
   res.status(200).json({

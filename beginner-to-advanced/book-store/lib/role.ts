@@ -1,5 +1,5 @@
 import type { PublicUser } from "@/features/users/users.model";
-import { ApiError } from "@/lib/api-error";
+import { ApiError } from "@/lib/error";
 
 export const assertOwnership = (
   user: PublicUser,

@@ -8,9 +8,9 @@ import {
 } from "./books.model";
 import { authorsTable } from "@/features/authors/authors.model";
 import type { Uuid } from "@/lib/validators";
-import { ApiError } from "@/lib/api-error";
-import { getCurrentUser } from "@/lib/current-user";
-import { assertOwnership } from "@/lib/ownership";
+import { ApiError } from "@/lib/error";
+import { getCurrentUser } from "@/lib/user";
+import { assertOwnership } from "@/lib/role";
 import { asc, count, desc, eq, ilike } from "drizzle-orm";
 
 const SORTABLE = {

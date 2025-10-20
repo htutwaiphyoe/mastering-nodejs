@@ -9,7 +9,7 @@ import {
 } from "@/features/users/users.model";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { signToken } from "@/lib/jwt";
-import { ApiError } from "@/lib/api-error";
+import { ApiError } from "@/lib/error";
 
 export const signup = async (
   req: Request<{}, unknown, SignupInput>,
