@@ -1,5 +1,5 @@
-import "dotenv/config";
 import express from "express";
+import { env } from "@/lib/env";
 import bookRouter from "@/features/books/books.route";
 import authorRouter from "@/features/authors/authors.route";
 import authRouter from "@/features/auth/auth.route";
@@ -22,6 +22,6 @@ app.use(notFoundHandler);
 
 app.use(errorHandler);
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server is listing on port: ${process.env.PORT}`);
+app.listen(env.PORT, () => {
+  console.log(`Server is listening on port: ${env.PORT}`);
 });
