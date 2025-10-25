@@ -1,5 +1,8 @@
 import express from "express";
+import helmet from "helmet";
+import cors from "cors";
 import { env } from "@/lib/env";
+import { apiLimiter, authLimiter } from "@/middleware/rate-limit";
 import bookRouter from "@/features/books/books.route";
 import authorRouter from "@/features/authors/authors.route";
 import authRouter from "@/features/auth/auth.route";
@@ -8,13 +11,19 @@ import { errorHandler, notFoundHandler } from "@/middleware/error-handler";
 
 const app = express();
 
+app.use(helmet());
+
+app.use(cors({ origin: env.CORS_ORIGIN }));
+
 app.use(express.json());
+
+app.use(apiLimiter);
 
 app.use("/books", bookRouter);
 
 app.use("/authors", authorRouter);
 
-app.use("/auth", authRouter);
+app.use("/auth", authLimiter, authRouter);
 
 app.use("/users", userRouter);
 

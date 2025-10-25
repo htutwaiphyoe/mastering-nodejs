@@ -8,6 +8,7 @@ const envSchema = z.object({
     .string()
     .min(32, "JWT_SECRET must be at least 32 characters"),
   JWT_EXPIRES_IN: z.string().default("7d"),
+  CORS_ORIGIN: z.string().default("*"),
 });
 
 const result = envSchema.safeParse(process.env);
