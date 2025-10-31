@@ -3,6 +3,7 @@ import helmet from "helmet";
 import cors from "cors";
 import { env } from "@/lib/env";
 import { apiLimiter, authLimiter } from "@/middleware/rate-limit";
+import healthRouter from "@/features/health/health.route";
 import bookRouter from "@/features/books/books.route";
 import authorRouter from "@/features/authors/authors.route";
 import authRouter from "@/features/auth/auth.route";
@@ -16,6 +17,8 @@ app.use(helmet());
 app.use(cors({ origin: env.CORS_ORIGIN }));
 
 app.use(express.json());
+
+app.use("/health", healthRouter);
 
 app.use(apiLimiter);
 
