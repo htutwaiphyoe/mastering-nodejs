@@ -48,7 +48,7 @@ export const errorHandler = (
     });
   }
 
-  console.error(err);
+  req.log.error({ err }, "Unhandled error");
 
   res.status(500).json({
     status: "error",

@@ -1,7 +1,9 @@
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
+import { pinoHttp } from "pino-http";
 import { env } from "@/lib/env";
+import { logger } from "@/lib/logger";
 import { apiLimiter, authLimiter } from "@/middleware/rate-limit";
 import healthRouter from "@/features/health/health.route";
 import bookRouter from "@/features/books/books.route";
@@ -11,6 +13,13 @@ import userRouter from "@/features/users/users.route";
 import { errorHandler, notFoundHandler } from "@/middleware/error-handler";
 
 const app = express();
+
+app.use(
+  pinoHttp({
+    logger,
+    autoLogging: { ignore: (req) => req.url === "/health" },
+  }),
+);
 
 app.use(helmet());
 
@@ -35,5 +44,5 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 app.listen(env.PORT, () => {
-  console.log(`Server is listening on port: ${env.PORT}`);
+  logger.info(`Server is listening on port: ${env.PORT}`);
 });
