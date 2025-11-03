@@ -184,6 +184,57 @@ But the deeper principle worth remembering is that **transactional records shoul
 
 The rule of thumb that falls out of this: **catalog data** (books, authors) can be edited or hidden, so it's fine to soft-delete and reference live; **transactional data** (orders) is append-only and self-contained, so it snapshots what it needs and never lets a later change rewrite history.
 
+## 12. Authentication: JWT & password hashing
+
+Authentication answers one question — *who is this request from?* The stateless way to answer it is a **JWT**: after a successful login the server hands the client a signed token, and the client sends it back on every subsequent request (in the `Authorization: Bearer <token>` header). The server can then trust the request without looking anything up in a session store.
+
+A token is three base64 pieces joined by dots: `header.payload.signature`. The **header** says which algorithm signed it and barely changes between tokens. The **payload** carries the claims — who the user is (`sub`, the subject, is the user id), when the token was issued and when it expires. The **signature** is the important part: it's an HMAC of the header and payload computed with a secret only the server knows. Anyone can *read* a JWT (the payload is encoded, **not encrypted**), but nobody can forge or tamper with one without the secret, because any change to the payload invalidates the signature. The practical rule: the signature proves **integrity, not confidentiality** — so never put anything secret in the payload.
+
+Passwords are a separate concern and never travel in the token. They're stored as an **argon2id** hash via `Bun.password.hash`, and login verifies with `Bun.password.verify`. You never store or compare plaintext; you compare against the hash.
+
+**Watch out:** it's tempting to define a custom `AuthedRequest` type (a `Request` where `user` is guaranteed present) and use it as a handler's parameter type. It doesn't work — under `strictFunctionTypes`, Express's handler signature is contravariant in its request type, so a narrower request type isn't assignable where Express expects the base `Request`. The clean fix is a small `getCurrentUser(req)` helper that throws if `req.user` is missing and returns the narrowed type, called inside the handler instead of typing the parameter.
+
+## 13. Authorization: roles vs ownership
+
+Authorization answers the next question — *is this authenticated user allowed to do this?* Two HTTP statuses keep the distinction honest: **401 Unauthenticated** means "I don't know who you are" (missing or invalid token), while **403 Forbidden** means "I know who you are, and you can't do this." Conflating them leaks information and confuses clients.
+
+There are two independent axes of "allowed," and this project uses both:
+
+- **Role-based** — an `authorize(...roles)` middleware factory that checks `req.user.role` against a list and 403s otherwise. Coarse-grained: "admins and publishers may create books."
+- **Ownership-based** — an `assertOwnership(user, createdBy)` check *inside the controller*, after the row is loaded, so it can compare the row's `createdBy` against the current user. Fine-grained: "a publisher may edit only the books they created." Admins bypass the ownership check entirely.
+
+The two compose into a clean pipeline for a mutating route: **`validate → authenticate → authorize(role) → ownership check`**. Each stage fails fast with the right status, so by the time the controller does its work, the input is well-formed, the caller is known, their role is sufficient, and they own the resource.
+
+**Watch out — user enumeration:** on login, return the *same* error for an unknown email and a wrong password. If "no such user" and "wrong password" look different, an attacker can discover which emails have accounts. Same message, same status, for both.
+
+**Watch out — the soft-delete lockout trap:** deactivating an account is a soft delete (`deactivatedAt`), and the authenticate middleware refuses to load a deactivated user. That has a consequence that's easy to miss: a deactivated user **cannot authenticate**, so they can't reactivate *themselves*. Reactivation therefore has to be an admin-only action. And by the same logic, admin accounts must not be deactivatable at all — deactivate the last admin and there's no one left who can turn anyone (including that admin) back on.
+
+## 14. Configuration & environment validation
+
+Environment variables are untyped strings that may or may not be set, and reading them ad hoc (`process.env.PORT`, `process.env.DATABASE_URL!`) scatters that uncertainty across the codebase — a missing or malformed value blows up deep inside some unrelated request instead of at startup. The fix is to validate the whole environment **once, at boot**, with a Zod schema, and export a single typed `env` object that the rest of the app imports. Coercions live there too (`z.coerce.number()` turns the `PORT` string into a real number), so `env.PORT` is typed `number`, not `string | undefined`.
+
+The payoff is **fail-fast**: if `JWT_SECRET` is too short or `DATABASE_URL` is missing, the process prints exactly what's wrong and exits before the server ever listens — you find out on deploy, not on the first request that happens to need it.
+
+## 15. Hardening: helmet, CORS, rate limiting, health checks
+
+A handful of middleware turn a working API into a deployable one:
+
+- **helmet** sets a batch of sensible security response headers (CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, …) so browsers refuse a range of attacks by default.
+- **CORS** controls which origins may call the API from a browser; the allowed origin is config, so it can be locked down per environment.
+- **Rate limiting** caps requests per client per window. The general limiter protects the whole API, and a **stricter limiter on `/auth`** specifically blunts credential brute-forcing — the login route is the one you most want to throttle.
+
+Middleware **order matters**: security headers and CORS go first, body parsing next, then the rate limiter, then routes; the error handler is always last.
+
+A **health check** (`GET /health`) is what a load balancer or uptime monitor polls to decide if the instance is alive. A useful one doesn't just return `200` blindly — it pings the database (`SELECT 1`) and returns **503** if the DB is unreachable, so "healthy" actually means "can serve real traffic." Two practical details: mount it **before** the rate limiter (probes hit it constantly and shouldn't be throttled), and wrap the DB check in `try/catch` so a failure returns a clean 503 instead of falling through to the generic 500 handler.
+
+## 16. Structured logging
+
+`console.log` is fine until you need to *search* your logs. Structured logging (via **pino**) emits one JSON object per line — level, timestamp, request id, method, url, status, response time — which a log aggregator can filter and query. The trick is to keep it readable while developing: **pretty-print in dev, raw JSON in prod**, switched on `NODE_ENV`. Wiring `pino-http` in as middleware gives every request a `req.log` that already carries a per-request id, so logs from the same request correlate.
+
+**Watch out (Bun-specific):** pino's usual way to pretty-print is a *transport*, which runs the formatter in a **worker thread**. Under Bun that thread doesn't flush reliably, so the log file comes out empty even though everything "works." The fix is to use `pino-pretty` as a **direct stream** (`pino(pretty(...))`) instead of a transport — no worker thread, logs appear immediately. Also worth doing: exclude `/health` from request logging, or uptime probes will bury the useful lines.
+
+**Watch out (background processes):** when testing a server you launched with `&`, a stale copy left bound to the port will keep serving requests while your *new* process logs nothing — making it look like logging is broken when it isn't. Kill by port (`lsof -ti tcp:8000 | xargs kill`), not just by name, before re-running.
+
 ---
 
 *Field notes from building the Book Store API — kept as a quick reference for next time.*
