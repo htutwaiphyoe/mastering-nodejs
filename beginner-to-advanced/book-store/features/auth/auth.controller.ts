@@ -7,9 +7,9 @@ import {
   type SignupInput,
   type LoginInput,
 } from "@/features/users/users.model";
-import { hashPassword, verifyPassword } from "@/lib/password";
-import { signToken } from "@/lib/jwt";
-import { ApiError } from "@/lib/error";
+import { hashPassword, verifyPassword } from "@/libs/password";
+import { signToken } from "@/libs/jwt";
+import { ApiError } from "@/libs/error";
 
 export const signup = async (
   req: Request<{}, unknown, SignupInput>,

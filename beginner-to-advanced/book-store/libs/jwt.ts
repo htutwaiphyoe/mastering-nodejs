@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { env } from "@/lib/env";
+import { env } from "@/libs/env";
 
 export type JwtPayload = { sub: string };
 

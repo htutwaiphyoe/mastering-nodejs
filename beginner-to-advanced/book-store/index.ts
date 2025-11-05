@@ -2,15 +2,15 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import { pinoHttp } from "pino-http";
-import { env } from "@/lib/env";
-import { logger } from "@/lib/logger";
-import { apiLimiter, authLimiter } from "@/middleware/rate-limit";
+import { env } from "@/libs/env";
+import { logger } from "@/libs/logger";
+import { apiLimiter, authLimiter } from "@/middlewares/rate-limit";
 import healthRouter from "@/features/health/health.route";
 import bookRouter from "@/features/books/books.route";
 import authorRouter from "@/features/authors/authors.route";
 import authRouter from "@/features/auth/auth.route";
 import userRouter from "@/features/users/users.route";
-import { errorHandler, notFoundHandler } from "@/middleware/error-handler";
+import { errorHandler, notFoundHandler } from "@/middlewares/error-handler";
 
 const app = express();
 

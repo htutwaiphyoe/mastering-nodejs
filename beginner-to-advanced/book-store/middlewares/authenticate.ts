@@ -2,8 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import { and, eq, isNull } from "drizzle-orm";
 import db from "@/db";
 import { usersTable, publicUserColumns } from "@/features/users/users.model";
-import { verifyToken } from "@/lib/jwt";
-import { ApiError } from "@/lib/error";
+import { verifyToken } from "@/libs/jwt";
+import { ApiError } from "@/libs/error";
 
 export const authenticate = async (
   req: Request,

@@ -1,5 +1,5 @@
 import express from "express";
-import { validate } from "@/middleware/validate";
+import { validate } from "@/middlewares/validate";
 import { signupSchema, loginSchema } from "@/features/users/users.model";
 import { signup, login } from "./auth.controller";
 

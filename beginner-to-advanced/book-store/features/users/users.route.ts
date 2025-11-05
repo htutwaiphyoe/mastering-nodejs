@@ -1,8 +1,8 @@
 import express from "express";
-import { authenticate } from "@/middleware/authenticate";
-import { authorize } from "@/middleware/authorize";
-import { validate } from "@/middleware/validate";
-import { idParamSchema } from "@/lib/validators";
+import { authenticate } from "@/middlewares/authenticate";
+import { authorize } from "@/middlewares/authorize";
+import { validate } from "@/middlewares/validate";
+import { idParamSchema } from "@/libs/validators";
 import { updateUserSchema, updateUserRoleSchema } from "./users.model";
 import {
   me,

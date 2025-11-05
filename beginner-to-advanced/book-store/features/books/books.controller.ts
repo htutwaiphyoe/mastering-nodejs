@@ -7,10 +7,10 @@ import {
   type UpdateBook,
 } from "./books.model";
 import { authorsTable } from "@/features/authors/authors.model";
-import type { Uuid } from "@/lib/validators";
-import { ApiError } from "@/lib/error";
-import { getCurrentUser } from "@/lib/user";
-import { assertOwnership } from "@/lib/role";
+import type { Uuid } from "@/libs/validators";
+import { ApiError } from "@/libs/error";
+import { getCurrentUser } from "@/libs/user";
+import { assertOwnership } from "@/libs/role";
 import { asc, count, desc, eq, ilike } from "drizzle-orm";
 
 const SORTABLE = {

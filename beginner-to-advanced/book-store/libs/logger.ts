@@ -1,6 +1,6 @@
 import pino from "pino";
 import pretty from "pino-pretty";
-import { env } from "@/lib/env";
+import { env } from "@/libs/env";
 
 export const logger =
   env.NODE_ENV === "development"

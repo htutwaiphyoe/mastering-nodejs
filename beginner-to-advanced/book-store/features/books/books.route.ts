@@ -1,8 +1,8 @@
 import express from "express";
-import { validate } from "@/middleware/validate";
-import { authenticate } from "@/middleware/authenticate";
-import { authorize } from "@/middleware/authorize";
-import { idParamSchema } from "@/lib/validators";
+import { validate } from "@/middlewares/validate";
+import { authenticate } from "@/middlewares/authenticate";
+import { authorize } from "@/middlewares/authorize";
+import { idParamSchema } from "@/libs/validators";
 import {
   createBook,
   deleteBook,

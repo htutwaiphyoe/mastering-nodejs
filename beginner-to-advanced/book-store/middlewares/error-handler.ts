@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { ApiError, getPgConstraint, getPgErrorCode } from "@/lib/error";
+import { ApiError, getPgConstraint, getPgErrorCode } from "@/libs/error";
 
 export const notFoundHandler = (req: Request, res: Response) => {
   res.status(404).json({

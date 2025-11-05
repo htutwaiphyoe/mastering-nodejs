@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import type { UserRole } from "@/features/users/users.model";
-import { getCurrentUser } from "@/lib/user";
-import { ApiError } from "@/lib/error";
+import { getCurrentUser } from "@/libs/user";
+import { ApiError } from "@/libs/error";
 
 export const authorize =
   (...roles: UserRole[]) =>
