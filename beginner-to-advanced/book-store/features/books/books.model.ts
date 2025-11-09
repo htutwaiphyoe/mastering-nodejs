@@ -33,6 +33,7 @@ export const booksTable = pgTable(
       .defaultNow()
       .notNull()
       .$onUpdate(() => new Date()),
+    deletedAt: timestamp(),
   },
   (table) => [
     index("books_title_trgm_idx").using(

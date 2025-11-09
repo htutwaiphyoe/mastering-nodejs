@@ -11,7 +11,7 @@ import type { Uuid } from "@/libs/validators";
 import { ApiError } from "@/libs/error";
 import { getCurrentUser } from "@/libs/user";
 import { assertOwnership } from "@/libs/role";
-import { asc, count, desc, eq, ilike } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, isNull } from "drizzle-orm";
 
 const SORTABLE = {
   title: booksTable.title,
@@ -27,7 +27,10 @@ export const getBooks = async (req: Request, res: Response) => {
   );
   const offset = (page - 1) * limit;
 
-  const where = search ? ilike(booksTable.title, `%${search}%`) : undefined;
+  const where = and(
+    isNull(booksTable.deletedAt),
+    search ? ilike(booksTable.title, `%${search}%`) : undefined,
+  );
 
   const $orderBy = (orderBy === "asc" ? asc : desc)(SORTABLE[sortBy]);
 
@@ -64,7 +67,7 @@ export const getBookById = async (
     .select()
     .from(booksTable)
     .leftJoin(authorsTable, eq(booksTable.authorId, authorsTable.id))
-    .where(eq(booksTable.id, id))
+    .where(and(eq(booksTable.id, id), isNull(booksTable.deletedAt)))
     .limit(1);
 
   if (!data) {
@@ -107,7 +110,7 @@ export const updateBook = async (
   const [existing] = await db
     .select({ createdBy: booksTable.createdBy })
     .from(booksTable)
-    .where(eq(booksTable.id, id))
+    .where(and(eq(booksTable.id, id), isNull(booksTable.deletedAt)))
     .limit(1);
 
   if (!existing) {
@@ -135,7 +138,7 @@ export const deleteBook = async (req: Request<{ id: Uuid }>, res: Response) => {
   const [existing] = await db
     .select({ createdBy: booksTable.createdBy })
     .from(booksTable)
-    .where(eq(booksTable.id, id))
+    .where(and(eq(booksTable.id, id), isNull(booksTable.deletedAt)))
     .limit(1);
 
   if (!existing) {
@@ -144,7 +147,10 @@ export const deleteBook = async (req: Request<{ id: Uuid }>, res: Response) => {
 
   assertOwnership(currentUser, existing.createdBy);
 
-  await db.delete(booksTable).where(eq(booksTable.id, id));
+  await db
+    .update(booksTable)
+    .set({ deletedAt: new Date() })
+    .where(eq(booksTable.id, id));
 
   res.status(200).json({
     status: "success",

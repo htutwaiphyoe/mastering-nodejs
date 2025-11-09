@@ -169,7 +169,7 @@ export const getAuthorBooks = async (
   const books = await db
     .select()
     .from(booksTable)
-    .where(eq(booksTable.authorId, id));
+    .where(and(eq(booksTable.authorId, id), isNull(booksTable.deletedAt)));
 
   res.status(200).json({
     status: "success",
