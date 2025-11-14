@@ -2,6 +2,7 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import { pinoHttp } from "pino-http";
+import cookieParser from "cookie-parser";
 import { env } from "@/libs/env";
 import { logger } from "@/libs/logger";
 import { apiLimiter, authLimiter } from "@/middlewares/rate-limit";
@@ -23,9 +24,11 @@ app.use(
 
 app.use(helmet());
 
-app.use(cors({ origin: env.CORS_ORIGIN }));
+app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 
 app.use(express.json());
+
+app.use(cookieParser());
 
 app.use("/health", healthRouter);
 

@@ -7,6 +7,7 @@ import {
   type UpdateUserInput,
   type UpdateUserRoleInput,
 } from "./users.model";
+import { refreshTokensTable } from "@/features/auth/auth.model";
 import type { Uuid } from "@/libs/validators";
 import { getCurrentUser } from "@/libs/user";
 import { ApiError } from "@/libs/error";
@@ -70,6 +71,16 @@ export const deactivateUser = async (
     .set({ deactivatedAt: new Date() })
     .where(and(eq(usersTable.id, id), isNull(usersTable.deactivatedAt)))
     .returning(publicUserColumns);
+
+  await db
+    .update(refreshTokensTable)
+    .set({ revokedAt: new Date() })
+    .where(
+      and(
+        eq(refreshTokensTable.userId, id),
+        isNull(refreshTokensTable.revokedAt),
+      ),
+    );
 
   res.status(200).json({
     status: "success",

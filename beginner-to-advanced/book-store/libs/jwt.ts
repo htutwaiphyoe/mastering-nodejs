@@ -3,10 +3,10 @@ import { env } from "@/libs/env";
 
 export type JwtPayload = { sub: string };
 
-export const signToken = (payload: JwtPayload): string =>
+export const signAccessToken = (payload: JwtPayload): string =>
   jwt.sign(payload, env.JWT_SECRET, {
-    expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"],
+    expiresIn: env.ACCESS_TOKEN_TTL_MINUTES * 60,
   });
 
-export const verifyToken = (token: string): JwtPayload =>
+export const verifyAccessToken = (token: string): JwtPayload =>
   jwt.verify(token, env.JWT_SECRET) as JwtPayload;

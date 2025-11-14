@@ -2,25 +2,32 @@ import type { NextFunction, Request, Response } from "express";
 import { and, eq, isNull } from "drizzle-orm";
 import db from "@/db";
 import { usersTable, publicUserColumns } from "@/features/users/users.model";
-import { verifyToken } from "@/libs/jwt";
+import { verifyAccessToken } from "@/libs/jwt";
+import { COOKIES, BEARER_PREFIX } from "@/constants";
 import { ApiError } from "@/libs/error";
+
+const extractToken = (req: Request): string | undefined => {
+  const header = req.headers.authorization;
+  if (header?.startsWith(BEARER_PREFIX)) {
+    return header.slice(BEARER_PREFIX.length);
+  }
+  return req.cookies?.[COOKIES.access.name];
+};
 
 export const authenticate = async (
   req: Request,
   _res: Response,
   next: NextFunction,
 ) => {
-  const header = req.headers.authorization;
+  const token = extractToken(req);
 
-  if (!header?.startsWith("Bearer ")) {
-    throw ApiError.unauthenticated("Missing or invalid authorization header.");
+  if (!token) {
+    throw ApiError.unauthenticated("Authentication required.");
   }
-
-  const token = header.slice("Bearer ".length);
 
   let payload;
   try {
-    payload = verifyToken(token);
+    payload = verifyAccessToken(token);
   } catch {
     throw ApiError.unauthenticated("Invalid or expired token.");
   }
