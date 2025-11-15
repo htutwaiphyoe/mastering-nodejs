@@ -78,8 +78,12 @@ export const signup = async (
     .values({ ...rest, password: passwordHash })
     .returning(publicUserColumns);
 
+  const { accessToken, refreshToken } = await issueTokens(res, user.id);
+
   res.status(201).json({
     status: "success",
+    accessToken,
+    refreshToken,
     user,
   });
 };
