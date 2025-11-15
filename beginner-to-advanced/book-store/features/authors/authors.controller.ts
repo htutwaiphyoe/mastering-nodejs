@@ -6,12 +6,16 @@ import {
   type NewAuthor,
   type UpdateAuthor,
 } from "./authors.model";
-import { booksTable } from "@/features/books/books.model";
+import {
+  booksTable,
+  booksQuerySchema,
+  bookSortColumns,
+} from "@/features/books/books.model";
 import type { Uuid } from "@/libs/validators";
 import { ApiError } from "@/libs/error";
 import { getCurrentUser } from "@/libs/user";
 import { assertOwnership } from "@/libs/role";
-import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, isNull } from "drizzle-orm";
 
 const SORTABLE = {
   name: authorsTable.name,
@@ -155,6 +159,10 @@ export const getAuthorBooks = async (
   res: Response,
 ) => {
   const { id } = req.params;
+  const { search, page, limit, sortBy, orderBy } = booksQuerySchema.parse(
+    req.query,
+  );
+  const offset = (page - 1) * limit;
 
   const [author] = await db
     .select()
@@ -166,13 +174,33 @@ export const getAuthorBooks = async (
     throw ApiError.notFound("Author is not found.");
   }
 
-  const books = await db
-    .select()
-    .from(booksTable)
-    .where(and(eq(booksTable.authorId, id), isNull(booksTable.deletedAt)));
+  const where = and(
+    eq(booksTable.authorId, id),
+    isNull(booksTable.deletedAt),
+    search ? ilike(booksTable.title, `%${search}%`) : undefined,
+  );
+
+  const $orderBy = (orderBy === "asc" ? asc : desc)(bookSortColumns[sortBy]);
+
+  const [books, [{ total }]] = await Promise.all([
+    db
+      .select()
+      .from(booksTable)
+      .where(where)
+      .orderBy($orderBy)
+      .limit(limit)
+      .offset(offset),
+    db.select({ total: count() }).from(booksTable).where(where),
+  ]);
 
   res.status(200).json({
     status: "success",
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
     books,
   });
 };

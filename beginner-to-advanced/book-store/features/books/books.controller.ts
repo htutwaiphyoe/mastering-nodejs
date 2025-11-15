@@ -3,6 +3,7 @@ import db from "@/db";
 import {
   booksTable,
   booksQuerySchema,
+  bookSortColumns,
   type NewBook,
   type UpdateBook,
 } from "./books.model";
@@ -12,14 +13,6 @@ import { ApiError } from "@/libs/error";
 import { getCurrentUser } from "@/libs/user";
 import { assertOwnership } from "@/libs/role";
 import { and, asc, count, desc, eq, ilike, isNull } from "drizzle-orm";
-
-const SORTABLE = {
-  title: booksTable.title,
-  price: booksTable.price,
-  publishedDate: booksTable.publishedDate,
-  stock: booksTable.stock,
-  createdAt: booksTable.createdAt,
-};
 
 export const getBooks = async (req: Request, res: Response) => {
   const { search, page, limit, sortBy, orderBy } = booksQuerySchema.parse(
@@ -32,7 +25,7 @@ export const getBooks = async (req: Request, res: Response) => {
     search ? ilike(booksTable.title, `%${search}%`) : undefined,
   );
 
-  const $orderBy = (orderBy === "asc" ? asc : desc)(SORTABLE[sortBy]);
+  const $orderBy = (orderBy === "asc" ? asc : desc)(bookSortColumns[sortBy]);
 
   const [books, [{ total }]] = await Promise.all([
     db

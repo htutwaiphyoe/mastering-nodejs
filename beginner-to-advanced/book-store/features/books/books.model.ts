@@ -43,6 +43,14 @@ export const booksTable = pgTable(
   ],
 );
 
+export const bookSortColumns = {
+  title: booksTable.title,
+  price: booksTable.price,
+  publishedDate: booksTable.publishedDate,
+  stock: booksTable.stock,
+  createdAt: booksTable.createdAt,
+};
+
 export const insertBookSchema = createInsertSchema(booksTable, {
   title: () =>
     z
