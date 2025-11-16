@@ -6,16 +6,20 @@ import {
   publicUserColumns,
   type SignupInput,
   type LoginInput,
+  type ForgotPasswordInput,
+  type ResetPasswordInput,
 } from "@/features/users/users.model";
 import { refreshTokensTable } from "./auth.model";
 import { COOKIES } from "@/constants";
 import { hashPassword, verifyPassword } from "@/libs/password";
 import { signAccessToken } from "@/libs/jwt";
 import {
-  generateRefreshToken,
-  hashRefreshToken,
+  generateToken,
+  hashToken,
   refreshTokenExpiry,
-} from "@/libs/refresh-token";
+  resetTokenExpiry,
+} from "@/libs/token";
+import { sendMail } from "@/libs/mailer";
 import { env } from "@/libs/env";
 import { ApiError } from "@/libs/error";
 
@@ -43,13 +47,19 @@ const setAuthCookies = (
 };
 
 const clearAuthCookies = (res: Response) => {
-  res.clearCookie(COOKIES.access.name, { ...cookieBase, path: COOKIES.access.path });
-  res.clearCookie(COOKIES.refresh.name, { ...cookieBase, path: COOKIES.refresh.path });
+  res.clearCookie(COOKIES.access.name, {
+    ...cookieBase,
+    path: COOKIES.access.path,
+  });
+  res.clearCookie(COOKIES.refresh.name, {
+    ...cookieBase,
+    path: COOKIES.refresh.path,
+  });
 };
 
 const issueTokens = async (res: Response, userId: string) => {
   const accessToken = signAccessToken({ sub: userId });
-  const { token: refreshToken, tokenHash } = generateRefreshToken();
+  const { token: refreshToken, tokenHash } = generateToken();
 
   await db.insert(refreshTokensTable).values({
     userId,
@@ -126,7 +136,7 @@ export const refresh = async (req: Request, res: Response) => {
   const [stored] = await db
     .select()
     .from(refreshTokensTable)
-    .where(eq(refreshTokensTable.tokenHash, hashRefreshToken(rawToken)))
+    .where(eq(refreshTokensTable.tokenHash, hashToken(rawToken)))
     .limit(1);
 
   if (!stored) {
@@ -174,7 +184,7 @@ export const logout = async (req: Request, res: Response) => {
       .set({ revokedAt: new Date() })
       .where(
         and(
-          eq(refreshTokensTable.tokenHash, hashRefreshToken(rawToken)),
+          eq(refreshTokensTable.tokenHash, hashToken(rawToken)),
           isNull(refreshTokensTable.revokedAt),
         ),
       );
@@ -184,5 +194,98 @@ export const logout = async (req: Request, res: Response) => {
 
   res.status(200).json({
     status: "success",
+  });
+};
+
+const sendPasswordResetEmail = (to: string, resetUrl: string) =>
+  sendMail({
+    to,
+    subject: "Reset your password",
+    text: `Reset your password using this link: ${resetUrl}\n\nThis link expires in ${env.RESET_TOKEN_TTL_MINUTES} minutes. If you didn't request this, ignore this email.`,
+    html: `<p>Reset your password using the link below:</p>
+<p><a href="${resetUrl}">Reset password</a></p>
+<p>This link expires in ${env.RESET_TOKEN_TTL_MINUTES} minutes. If you didn't request this, ignore this email.</p>`,
+  });
+
+export const forgotPassword = async (
+  req: Request<{}, unknown, ForgotPasswordInput>,
+  res: Response,
+) => {
+  const { email } = req.body;
+
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(and(eq(usersTable.email, email), isNull(usersTable.deactivatedAt)))
+    .limit(1);
+
+  if (user) {
+    const { token, tokenHash } = generateToken();
+
+    await db
+      .update(usersTable)
+      .set({
+        passwordResetTokenHash: tokenHash,
+        passwordResetExpiresAt: resetTokenExpiry(),
+      })
+      .where(eq(usersTable.id, user.id));
+
+    const resetUrl = `${env.CLIENT_URL}/reset-password?token=${token}`;
+
+    sendPasswordResetEmail(user.email, resetUrl).catch((err) =>
+      req.log.error({ err }, "Failed to send password reset email"),
+    );
+  }
+
+  res.status(200).json({
+    status: "success",
+    message: "If an account exists for that email, a reset link has been sent.",
+  });
+};
+
+export const resetPassword = async (
+  req: Request<{}, unknown, ResetPasswordInput>,
+  res: Response,
+) => {
+  const { token, password } = req.body;
+
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.passwordResetTokenHash, hashToken(token)))
+    .limit(1);
+
+  if (
+    !user ||
+    !user.passwordResetExpiresAt ||
+    user.passwordResetExpiresAt <= new Date()
+  ) {
+    throw ApiError.badRequest("Invalid or expired reset token.");
+  }
+
+  const passwordHash = await hashPassword(password);
+
+  await db
+    .update(usersTable)
+    .set({
+      password: passwordHash,
+      passwordResetTokenHash: null,
+      passwordResetExpiresAt: null,
+    })
+    .where(eq(usersTable.id, user.id));
+
+  await db
+    .update(refreshTokensTable)
+    .set({ revokedAt: new Date() })
+    .where(
+      and(
+        eq(refreshTokensTable.userId, user.id),
+        isNull(refreshTokensTable.revokedAt),
+      ),
+    );
+
+  res.status(200).json({
+    status: "success",
+    message: "Password has been reset. Please log in.",
   });
 };

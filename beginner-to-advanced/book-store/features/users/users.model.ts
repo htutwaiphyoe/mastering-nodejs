@@ -27,6 +27,8 @@ export const usersTable = pgTable("users", {
     .notNull()
     .$onUpdate(() => new Date()),
   deactivatedAt: timestamp(),
+  passwordResetTokenHash: varchar({ length: 64 }),
+  passwordResetExpiresAt: timestamp(),
 });
 
 export const signupSchema = createInsertSchema(usersTable, {
@@ -85,6 +87,21 @@ export const loginSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
+
+export const forgotPasswordSchema = z.object({
+  email: z.email("Email must be a valid email"),
+});
+
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z.object({
+  token: z.string("Token is required").min(1, "Token is required"),
+  password: z
+    .string("Password is required")
+    .min(8, "Password must be at least 8 characters"),
+});
+
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 export const publicUserColumns = {
   id: usersTable.id,

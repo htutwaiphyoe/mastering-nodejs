@@ -1,7 +1,19 @@
 import express from "express";
 import { validate } from "@/middlewares/validate";
-import { signupSchema, loginSchema } from "@/features/users/users.model";
-import { signup, login, refresh, logout } from "./auth.controller";
+import {
+  signupSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "@/features/users/users.model";
+import {
+  signup,
+  login,
+  refresh,
+  logout,
+  forgotPassword,
+  resetPassword,
+} from "./auth.controller";
 
 const router = express.Router();
 
@@ -12,5 +24,17 @@ router.post("/login", validate("body", loginSchema), login);
 router.post("/refresh", refresh);
 
 router.post("/logout", logout);
+
+router.post(
+  "/forgot-password",
+  validate("body", forgotPasswordSchema),
+  forgotPassword,
+);
+
+router.post(
+  "/reset-password",
+  validate("body", resetPasswordSchema),
+  resetPassword,
+);
 
 export default router;

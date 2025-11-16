@@ -12,7 +12,14 @@ const envSchema = z.object({
     .min(32, "JWT_SECRET must be at least 32 characters"),
   ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(15),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
+  RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(30),
   CORS_ORIGIN: z.string().default("*"),
+  CLIENT_URL: z.string().default("http://localhost:8000"),
+  EMAIL_FROM: z.string().optional(),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
 });
 
 const result = envSchema.safeParse(process.env);
