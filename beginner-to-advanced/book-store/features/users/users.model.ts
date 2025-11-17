@@ -114,6 +114,8 @@ export const publicUserColumns = {
   updatedAt: usersTable.updatedAt,
 };
 
+export type AuthUser = Pick<typeof usersTable.$inferSelect, "id" | "role">;
+
 export type PublicUser = Pick<
   typeof usersTable.$inferSelect,
   | "id"

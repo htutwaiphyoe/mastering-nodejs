@@ -12,10 +12,22 @@ import type { Uuid } from "@/libs/validators";
 import { getCurrentUser } from "@/libs/user";
 import { ApiError } from "@/libs/error";
 
-export const me = (req: Request, res: Response) => {
+export const me = async (req: Request, res: Response) => {
+  const { id } = getCurrentUser(req);
+
+  const [user] = await db
+    .select(publicUserColumns)
+    .from(usersTable)
+    .where(and(eq(usersTable.id, id), isNull(usersTable.deactivatedAt)))
+    .limit(1);
+
+  if (!user) {
+    throw ApiError.unauthenticated("User is no longer active.");
+  }
+
   res.status(200).json({
     status: "success",
-    user: getCurrentUser(req),
+    user,
   });
 };
 

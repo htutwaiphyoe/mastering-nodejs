@@ -10,7 +10,7 @@ const envSchema = z.object({
   JWT_SECRET: z
     .string()
     .min(32, "JWT_SECRET must be at least 32 characters"),
-  ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(15),
+  ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(5),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
   RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(30),
   CORS_ORIGIN: z.string().default("*"),

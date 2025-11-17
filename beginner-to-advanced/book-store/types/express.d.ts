@@ -1,9 +1,9 @@
-import type { PublicUser } from "@/features/users/users.model";
+import type { AuthUser } from "@/features/users/users.model";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: PublicUser;
+      user?: AuthUser;
     }
   }
 }

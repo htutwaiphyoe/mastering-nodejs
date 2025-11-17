@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import { env } from "@/libs/env";
+import type { UserRole } from "@/features/users/users.model";
 
-export type JwtPayload = { sub: string };
+export type JwtPayload = { sub: string; role: UserRole };
 
 export const signAccessToken = (payload: JwtPayload): string =>
   jwt.sign(payload, env.JWT_SECRET, {

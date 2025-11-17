@@ -8,6 +8,7 @@ import {
   type LoginInput,
   type ForgotPasswordInput,
   type ResetPasswordInput,
+  type UserRole,
 } from "@/features/users/users.model";
 import { refreshTokensTable } from "./auth.model";
 import { COOKIES } from "@/constants";
@@ -22,6 +23,7 @@ import {
 import { sendMail } from "@/libs/mailer";
 import { env } from "@/libs/env";
 import { ApiError } from "@/libs/error";
+import { DAY, MINUTE } from "@/constants";
 
 const cookieBase = {
   httpOnly: true,
@@ -37,12 +39,12 @@ const setAuthCookies = (
   res.cookie(COOKIES.access.name, accessToken, {
     ...cookieBase,
     path: COOKIES.access.path,
-    maxAge: env.ACCESS_TOKEN_TTL_MINUTES * 60 * 1000,
+    maxAge: env.ACCESS_TOKEN_TTL_MINUTES * MINUTE,
   });
   res.cookie(COOKIES.refresh.name, refreshToken, {
     ...cookieBase,
     path: COOKIES.refresh.path,
-    maxAge: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
+    maxAge: env.REFRESH_TOKEN_TTL_DAYS * DAY,
   });
 };
 
@@ -57,8 +59,12 @@ const clearAuthCookies = (res: Response) => {
   });
 };
 
-const issueTokens = async (res: Response, userId: string) => {
-  const accessToken = signAccessToken({ sub: userId });
+const issueTokens = async (
+  res: Response,
+  userId: string,
+  role: UserRole,
+) => {
+  const accessToken = signAccessToken({ sub: userId, role });
   const { token: refreshToken, tokenHash } = generateToken();
 
   await db.insert(refreshTokensTable).values({
@@ -88,7 +94,11 @@ export const signup = async (
     .values({ ...rest, password: passwordHash })
     .returning(publicUserColumns);
 
-  const { accessToken, refreshToken } = await issueTokens(res, user.id);
+  const { accessToken, refreshToken } = await issueTokens(
+    res,
+    user.id,
+    user.role,
+  );
 
   res.status(201).json({
     status: "success",
@@ -114,7 +124,11 @@ export const login = async (
     throw ApiError.unauthenticated("Invalid email or password.");
   }
 
-  const { accessToken, refreshToken } = await issueTokens(res, user.id);
+  const { accessToken, refreshToken } = await issueTokens(
+    res,
+    user.id,
+    user.role,
+  );
 
   const { password: _password, ...safeUser } = user;
 
@@ -161,12 +175,29 @@ export const refresh = async (req: Request, res: Response) => {
     throw ApiError.unauthenticated("Refresh token has expired.");
   }
 
+  const [user] = await db
+    .select({ role: usersTable.role })
+    .from(usersTable)
+    .where(
+      and(eq(usersTable.id, stored.userId), isNull(usersTable.deactivatedAt)),
+    )
+    .limit(1);
+
+  if (!user) {
+    clearAuthCookies(res);
+    throw ApiError.unauthenticated("User is no longer active.");
+  }
+
   await db
     .update(refreshTokensTable)
     .set({ revokedAt: new Date() })
     .where(eq(refreshTokensTable.id, stored.id));
 
-  const { accessToken, refreshToken } = await issueTokens(res, stored.userId);
+  const { accessToken, refreshToken } = await issueTokens(
+    res,
+    stored.userId,
+    user.role,
+  );
 
   res.status(200).json({
     status: "success",
