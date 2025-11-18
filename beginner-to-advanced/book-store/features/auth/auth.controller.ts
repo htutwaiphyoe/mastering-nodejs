@@ -20,7 +20,11 @@ import {
   refreshTokenExpiry,
   resetTokenExpiry,
 } from "@/libs/token";
-import { sendMail } from "@/libs/mailer";
+import {
+  emailQueue,
+  PASSWORD_RESET_JOB,
+  type PasswordResetJob,
+} from "@/libs/queue";
 import { env } from "@/libs/env";
 import { ApiError } from "@/libs/error";
 import { DAY, MINUTE } from "@/constants";
@@ -228,16 +232,6 @@ export const logout = async (req: Request, res: Response) => {
   });
 };
 
-const sendPasswordResetEmail = (to: string, resetUrl: string) =>
-  sendMail({
-    to,
-    subject: "Reset your password",
-    text: `Reset your password using this link: ${resetUrl}\n\nThis link expires in ${env.RESET_TOKEN_TTL_MINUTES} minutes. If you didn't request this, ignore this email.`,
-    html: `<p>Reset your password using the link below:</p>
-<p><a href="${resetUrl}">Reset password</a></p>
-<p>This link expires in ${env.RESET_TOKEN_TTL_MINUTES} minutes. If you didn't request this, ignore this email.</p>`,
-  });
-
 export const forgotPassword = async (
   req: Request<{}, unknown, ForgotPasswordInput>,
   res: Response,
@@ -263,9 +257,10 @@ export const forgotPassword = async (
 
     const resetUrl = `${env.CLIENT_URL}/reset-password?token=${token}`;
 
-    sendPasswordResetEmail(user.email, resetUrl).catch((err) =>
-      req.log.error({ err }, "Failed to send password reset email"),
-    );
+    await emailQueue.add(PASSWORD_RESET_JOB, {
+      to: user.email,
+      resetUrl,
+    } satisfies PasswordResetJob);
   }
 
   res.status(200).json({

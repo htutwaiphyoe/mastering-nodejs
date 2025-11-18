@@ -13,6 +13,7 @@ const envSchema = z.object({
   ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(5),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
   RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(30),
+  REDIS_URL: z.string().default("redis://localhost:6379"),
   CORS_ORIGIN: z.string().default("*"),
   CLIENT_URL: z.string().default("http://localhost:8000"),
   EMAIL_FROM: z.string().optional(),
