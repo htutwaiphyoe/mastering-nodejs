@@ -1,4 +1,5 @@
 import { Worker } from "bullmq";
+import cron from "node-cron";
 import {
   connection,
   EMAIL_QUEUE,
@@ -7,6 +8,8 @@ import {
 } from "@/libs/queue";
 import { sendMail } from "@/libs/mailer";
 import { buildPasswordResetEmail } from "@/utils/mail";
+import { cleanupExpiredTokens } from "@/jobs/cleanup";
+import { env } from "@/libs/env";
 import { logger } from "@/libs/logger";
 
 const worker = new Worker(
@@ -32,3 +35,11 @@ worker.on("failed", (job, err) => {
 });
 
 logger.info("Email worker started");
+
+cron.schedule(env.CLEANUP_CRON, () => {
+  cleanupExpiredTokens().catch((err) =>
+    logger.error({ err }, "Token cleanup failed"),
+  );
+});
+
+logger.info(`Token cleanup scheduled (${env.CLEANUP_CRON})`);
