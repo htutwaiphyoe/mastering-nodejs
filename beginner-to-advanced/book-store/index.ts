@@ -11,6 +11,7 @@ import bookRouter from "@/features/books/books.route";
 import authorRouter from "@/features/authors/authors.route";
 import authRouter from "@/features/auth/auth.route";
 import userRouter from "@/features/users/users.route";
+import orderRouter from "@/features/orders/orders.route";
 import { errorHandler, notFoundHandler } from "@/middlewares/error-handler";
 
 const app = express();
@@ -41,6 +42,8 @@ app.use("/authors", authorRouter);
 app.use("/auth", authLimiter, authRouter);
 
 app.use("/users", userRouter);
+
+app.use("/orders", orderRouter);
 
 app.use(notFoundHandler);
 
