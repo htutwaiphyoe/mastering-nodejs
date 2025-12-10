@@ -13,9 +13,18 @@ export type PasswordResetJob = {
   resetUrl: string;
 };
 
+export type OrderConfirmationJob = {
+  to: string;
+  orderId: string;
+  total: string;
+  items: { title: string; price: string; quantity: number }[];
+};
+
 export const EMAIL_QUEUE = "email";
 
 export const PASSWORD_RESET_JOB = "password-reset";
+
+export const ORDER_CONFIRMATION_JOB = "order-confirmation";
 
 export const emailQueue = new Queue(EMAIL_QUEUE, {
   connection,

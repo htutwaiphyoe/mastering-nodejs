@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { and, asc, count, desc, eq, gte, isNull, sql } from "drizzle-orm";
 import db from "@/db";
 import { booksTable } from "@/features/books/books.model";
+import { usersTable } from "@/features/users/users.model";
 import {
   ordersTable,
   orderItemsTable,
@@ -9,6 +10,11 @@ import {
   type CreateOrderInput,
 } from "./orders.model";
 import { getCurrentUser } from "@/libs/user";
+import {
+  emailQueue,
+  ORDER_CONFIRMATION_JOB,
+  type OrderConfirmationJob,
+} from "@/libs/queue";
 import { ApiError } from "@/libs/error";
 
 const ORDER_SORT = {
@@ -68,6 +74,29 @@ export const createOrder = async (
 
     return { order, items: orderItems };
   });
+
+  const [buyer] = await db
+    .select({ email: usersTable.email })
+    .from(usersTable)
+    .where(eq(usersTable.id, currentUser.id))
+    .limit(1);
+
+  if (buyer) {
+    emailQueue
+      .add(ORDER_CONFIRMATION_JOB, {
+        to: buyer.email,
+        orderId: result.order.id,
+        total: result.order.total,
+        items: result.items.map((i) => ({
+          title: i.title,
+          price: i.price,
+          quantity: i.quantity,
+        })),
+      } satisfies OrderConfirmationJob)
+      .catch((err) =>
+        req.log.error({ err }, "Failed to enqueue order confirmation email"),
+      );
+  }
 
   res.status(201).json({
     status: "success",

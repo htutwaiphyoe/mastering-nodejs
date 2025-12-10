@@ -4,10 +4,15 @@ import {
   connection,
   EMAIL_QUEUE,
   PASSWORD_RESET_JOB,
+  ORDER_CONFIRMATION_JOB,
   type PasswordResetJob,
+  type OrderConfirmationJob,
 } from "@/libs/queue";
 import { sendMail } from "@/libs/mailer";
-import { buildPasswordResetEmail } from "@/utils/mail";
+import {
+  buildPasswordResetEmail,
+  buildOrderConfirmationEmail,
+} from "@/utils/mail";
 import { cleanupExpiredTokens } from "@/jobs/cleanup";
 import { env } from "@/libs/env";
 import { logger } from "@/libs/logger";
@@ -18,6 +23,11 @@ const worker = new Worker(
     if (job.name === PASSWORD_RESET_JOB) {
       const { to, resetUrl } = job.data as PasswordResetJob;
       await sendMail({ to, ...buildPasswordResetEmail(resetUrl) });
+    }
+
+    if (job.name === ORDER_CONFIRMATION_JOB) {
+      const { to, ...order } = job.data as OrderConfirmationJob;
+      await sendMail({ to, ...buildOrderConfirmationEmail(order) });
     }
   },
   { connection },
