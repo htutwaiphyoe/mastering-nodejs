@@ -10,6 +10,7 @@ import {
   type CreateOrderInput,
 } from "./orders.model";
 import { getCurrentUser } from "@/libs/user";
+import type { Uuid } from "@/libs/validators";
 import {
   emailQueue,
   ORDER_CONFIRMATION_JOB,
@@ -136,5 +137,37 @@ export const getOrders = async (req: Request, res: Response) => {
       totalPages: Math.ceil(total / limit),
     },
     orders,
+  });
+};
+
+export const getOrderById = async (
+  req: Request<{ id: Uuid }>,
+  res: Response,
+) => {
+  const { id } = req.params;
+  const currentUser = getCurrentUser(req);
+
+  const [order] = await db
+    .select()
+    .from(ordersTable)
+    .where(eq(ordersTable.id, id))
+    .limit(1);
+
+  if (!order) {
+    throw ApiError.notFound("Order is not found.");
+  }
+
+  if (order.userId !== currentUser.id && currentUser.role !== "admin") {
+    throw ApiError.forbidden("You can only view your own orders.");
+  }
+
+  const items = await db
+    .select()
+    .from(orderItemsTable)
+    .where(eq(orderItemsTable.orderId, id));
+
+  res.status(200).json({
+    status: "success",
+    order: { ...order, items },
   });
 };
