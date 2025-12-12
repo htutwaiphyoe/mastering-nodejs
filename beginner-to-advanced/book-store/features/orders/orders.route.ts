@@ -3,7 +3,12 @@ import { authenticate } from "@/middlewares/authenticate";
 import { validate } from "@/middlewares/validate";
 import { idParamSchema } from "@/libs/validators";
 import { createOrderSchema } from "./orders.model";
-import { createOrder, getOrders, getOrderById } from "./orders.controller";
+import {
+  createOrder,
+  getOrders,
+  getOrderById,
+  cancelOrder,
+} from "./orders.controller";
 
 const router = express.Router();
 
@@ -16,6 +21,13 @@ router.get(
   authenticate,
   validate("params", idParamSchema),
   getOrderById,
+);
+
+router.patch(
+  "/:id/cancel",
+  authenticate,
+  validate("params", idParamSchema),
+  cancelOrder,
 );
 
 export default router;

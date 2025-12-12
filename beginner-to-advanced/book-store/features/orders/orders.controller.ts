@@ -171,3 +171,59 @@ export const getOrderById = async (
     order: { ...order, items },
   });
 };
+
+export const cancelOrder = async (
+  req: Request<{ id: Uuid }>,
+  res: Response,
+) => {
+  const { id } = req.params;
+  const currentUser = getCurrentUser(req);
+
+  const cancelled = await db.transaction(async (tx) => {
+    const [order] = await tx
+      .select()
+      .from(ordersTable)
+      .where(eq(ordersTable.id, id))
+      .for("update")
+      .limit(1);
+
+    if (!order) {
+      throw ApiError.notFound("Order is not found.");
+    }
+
+    if (order.userId !== currentUser.id && currentUser.role !== "admin") {
+      throw ApiError.forbidden("You can only cancel your own orders.");
+    }
+
+    if (order.status !== "pending") {
+      throw ApiError.conflict("Only pending orders can be cancelled.");
+    }
+
+    const items = await tx
+      .select()
+      .from(orderItemsTable)
+      .where(eq(orderItemsTable.orderId, id));
+
+    for (const item of items) {
+      if (item.bookId) {
+        await tx
+          .update(booksTable)
+          .set({ stock: sql`${booksTable.stock} + ${item.quantity}` })
+          .where(eq(booksTable.id, item.bookId));
+      }
+    }
+
+    const [updated] = await tx
+      .update(ordersTable)
+      .set({ status: "cancelled" })
+      .where(eq(ordersTable.id, id))
+      .returning();
+
+    return updated;
+  });
+
+  res.status(200).json({
+    status: "success",
+    order: cancelled,
+  });
+};
