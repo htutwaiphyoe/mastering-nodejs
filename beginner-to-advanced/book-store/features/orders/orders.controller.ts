@@ -8,6 +8,8 @@ import {
   orderItemsTable,
   ordersQuerySchema,
   type CreateOrderInput,
+  type UpdateOrderStatusInput,
+  type OrderStatus,
 } from "./orders.model";
 import { getCurrentUser } from "@/libs/user";
 import type { Uuid } from "@/libs/validators";
@@ -225,5 +227,47 @@ export const cancelOrder = async (
   res.status(200).json({
     status: "success",
     order: cancelled,
+  });
+};
+
+const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  pending: ["paid"],
+  paid: ["shipped"],
+  shipped: [],
+  cancelled: [],
+};
+
+export const updateOrderStatus = async (
+  req: Request<{ id: Uuid }, unknown, UpdateOrderStatusInput>,
+  res: Response,
+) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const [order] = await db
+    .select({ status: ordersTable.status })
+    .from(ordersTable)
+    .where(eq(ordersTable.id, id))
+    .limit(1);
+
+  if (!order) {
+    throw ApiError.notFound("Order is not found.");
+  }
+
+  if (!STATUS_TRANSITIONS[order.status].includes(status)) {
+    throw ApiError.badRequest(
+      `Cannot change status from ${order.status} to ${status}.`,
+    );
+  }
+
+  const [updated] = await db
+    .update(ordersTable)
+    .set({ status })
+    .where(eq(ordersTable.id, id))
+    .returning();
+
+  res.status(200).json({
+    status: "success",
+    order: updated,
   });
 };

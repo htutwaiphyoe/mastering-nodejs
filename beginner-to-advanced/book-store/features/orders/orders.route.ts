@@ -1,13 +1,15 @@
 import express from "express";
 import { authenticate } from "@/middlewares/authenticate";
+import { authorize } from "@/middlewares/authorize";
 import { validate } from "@/middlewares/validate";
 import { idParamSchema } from "@/libs/validators";
-import { createOrderSchema } from "./orders.model";
+import { createOrderSchema, updateOrderStatusSchema } from "./orders.model";
 import {
   createOrder,
   getOrders,
   getOrderById,
   cancelOrder,
+  updateOrderStatus,
 } from "./orders.controller";
 
 const router = express.Router();
@@ -28,6 +30,15 @@ router.patch(
   authenticate,
   validate("params", idParamSchema),
   cancelOrder,
+);
+
+router.patch(
+  "/:id/status",
+  authenticate,
+  authorize("admin"),
+  validate("params", idParamSchema),
+  validate("body", updateOrderStatusSchema),
+  updateOrderStatus,
 );
 
 export default router;
