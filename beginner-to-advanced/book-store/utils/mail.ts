@@ -27,6 +27,15 @@ export const buildOrderConfirmationEmail = (order: {
   };
 };
 
+export const buildOrderStatusEmail = (order: {
+  orderId: string;
+  status: string;
+}) => ({
+  subject: `Order #${order.orderId} is now ${order.status}`,
+  text: `Your order #${order.orderId} status has been updated to: ${order.status}.`,
+  html: `<p>Your order <strong>#${order.orderId}</strong> status has been updated to <strong>${order.status}</strong>.</p>`,
+});
+
 export const buildPasswordResetEmail = (resetUrl: string) => ({
   subject: "Reset your password",
   text: `Reset your password using this link: ${resetUrl}\n\nThis link expires in ${env.RESET_TOKEN_TTL_MINUTES} minutes. If you didn't request this, ignore this email.`,

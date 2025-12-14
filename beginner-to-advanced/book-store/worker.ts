@@ -5,13 +5,16 @@ import {
   EMAIL_QUEUE,
   PASSWORD_RESET_JOB,
   ORDER_CONFIRMATION_JOB,
+  ORDER_STATUS_JOB,
   type PasswordResetJob,
   type OrderConfirmationJob,
+  type OrderStatusJob,
 } from "@/libs/queue";
 import { sendMail } from "@/libs/mailer";
 import {
   buildPasswordResetEmail,
   buildOrderConfirmationEmail,
+  buildOrderStatusEmail,
 } from "@/utils/mail";
 import { cleanupExpiredTokens } from "@/jobs/cleanup";
 import { env } from "@/libs/env";
@@ -28,6 +31,11 @@ const worker = new Worker(
     if (job.name === ORDER_CONFIRMATION_JOB) {
       const { to, ...order } = job.data as OrderConfirmationJob;
       await sendMail({ to, ...buildOrderConfirmationEmail(order) });
+    }
+
+    if (job.name === ORDER_STATUS_JOB) {
+      const { to, ...order } = job.data as OrderStatusJob;
+      await sendMail({ to, ...buildOrderStatusEmail(order) });
     }
   },
   { connection },

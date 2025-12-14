@@ -22,9 +22,17 @@ export type OrderConfirmationJob = {
 
 export const EMAIL_QUEUE = "email";
 
+export type OrderStatusJob = {
+  to: string;
+  orderId: string;
+  status: string;
+};
+
 export const PASSWORD_RESET_JOB = "password-reset";
 
 export const ORDER_CONFIRMATION_JOB = "order-confirmation";
+
+export const ORDER_STATUS_JOB = "order-status";
 
 export const emailQueue = new Queue(EMAIL_QUEUE, {
   connection,

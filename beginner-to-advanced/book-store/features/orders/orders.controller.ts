@@ -16,7 +16,9 @@ import type { Uuid } from "@/libs/validators";
 import {
   emailQueue,
   ORDER_CONFIRMATION_JOB,
+  ORDER_STATUS_JOB,
   type OrderConfirmationJob,
+  type OrderStatusJob,
 } from "@/libs/queue";
 import { ApiError } from "@/libs/error";
 
@@ -265,6 +267,24 @@ export const updateOrderStatus = async (
     .set({ status })
     .where(eq(ordersTable.id, id))
     .returning();
+
+  const [buyer] = await db
+    .select({ email: usersTable.email })
+    .from(usersTable)
+    .where(eq(usersTable.id, updated.userId))
+    .limit(1);
+
+  if (buyer) {
+    emailQueue
+      .add(ORDER_STATUS_JOB, {
+        to: buyer.email,
+        orderId: updated.id,
+        status: updated.status,
+      } satisfies OrderStatusJob)
+      .catch((err) =>
+        req.log.error({ err }, "Failed to enqueue order status email"),
+      );
+  }
 
   res.status(200).json({
     status: "success",
