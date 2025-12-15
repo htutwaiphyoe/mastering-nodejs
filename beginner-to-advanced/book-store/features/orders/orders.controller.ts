@@ -64,7 +64,12 @@ export const createOrder = async (
       }
 
       total += Number(book.price) * quantity;
-      lineItems.push({ bookId, title: book.title, price: book.price, quantity });
+      lineItems.push({
+        bookId,
+        title: book.title,
+        price: book.price,
+        quantity,
+      });
     }
 
     const [order] = await tx
@@ -225,6 +230,24 @@ export const cancelOrder = async (
 
     return updated;
   });
+
+  const [buyer] = await db
+    .select({ email: usersTable.email })
+    .from(usersTable)
+    .where(eq(usersTable.id, cancelled.userId))
+    .limit(1);
+
+  if (buyer) {
+    emailQueue
+      .add(ORDER_STATUS_JOB, {
+        to: buyer.email,
+        orderId: cancelled.id,
+        status: cancelled.status,
+      } satisfies OrderStatusJob)
+      .catch((err) =>
+        req.log.error({ err }, "Failed to enqueue order cancellation email"),
+      );
+  }
 
   res.status(200).json({
     status: "success",
