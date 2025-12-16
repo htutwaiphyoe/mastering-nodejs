@@ -12,7 +12,8 @@ Built with **Bun**, **Express 5**, **TypeScript**, **Drizzle ORM**, **PostgreSQL
 - **Auth** — signup, login, JWT **access + refresh tokens** (rotation + reuse detection), logout, and password reset by email. Tokens work via `Authorization: Bearer` **or** httpOnly cookies (web + mobile friendly).
 - **Authorization** — role-based (`admin`, `publisher`, `user`) plus ownership checks (publishers manage only what they created).
 - **Users** — profile, self-or-admin updates, account deactivation/reactivation, admin role management.
-- **Background work** — password-reset email sent off the request path via a **BullMQ** queue; a **node-cron** job prunes expired tokens.
+- **Orders** — transactional checkout with concurrency-safe stock decrement and price snapshots, order history, cancellation with restock, and admin status transitions.
+- **Background work** — password-reset and order emails sent off the request path via a **BullMQ** queue; a **node-cron** job prunes expired tokens.
 - **Production hardening** — Zod-validated env, `helmet`, CORS, rate limiting, a DB-checked `/health` endpoint, and structured logging (`pino`).
 
 ## Tech Stack
@@ -139,6 +140,15 @@ Responses use a consistent envelope: `{ "status": "success" | "error", ... }`.
 | PATCH | `/:id/reactivate` | admin |
 | PATCH | `/:id/role` | admin |
 
+### Orders — `/orders` (authenticated)
+| Method | Path | Access | Notes |
+|--------|------|--------|-------|
+| POST | `/` | any user | `{ items: [{ bookId, quantity }] }` — transactional, decrements stock |
+| GET | `/` | own orders; **admin** all | paginated |
+| GET | `/:id` | owner or admin | includes line items |
+| PATCH | `/:id/cancel` | owner or admin | `pending` only; restocks |
+| PATCH | `/:id/status` | admin | `pending→paid→shipped` |
+
 ### Health — `/health`
 | Method | Path | Description |
 |--------|------|-------------|
@@ -153,7 +163,7 @@ book-store/
 ├── db/                 # Drizzle client + schema aggregation
 ├── drizzle/            # generated SQL migrations
 ├── features/           # domain modules — <feature>/{model,controller,route}.ts
-│   ├── auth/  books/  authors/  users/  health/
+│   ├── auth/  books/  authors/  users/  orders/  health/
 ├── middlewares/        # authenticate, authorize, validate, error-handler, rate-limit
 ├── libs/               # shared helpers (env, jwt, token, password, error, logger, queue, mailer, ...)
 ├── jobs/               # scheduled jobs (token cleanup)

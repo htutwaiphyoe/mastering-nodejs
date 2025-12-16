@@ -282,6 +282,28 @@ Two different shapes of "not in the request":
 
 **Watch out — the worker needs the same config and a way to be run.** It's a real second process (`bun run worker`) with its own lifecycle; it loads the same `.env` (DB, Redis, SMTP) and must be started alongside the API in dev and deployed separately in prod.
 
+## 21. Orders: transactions, snapshots & inventory
+
+Placing an order is where several ideas from earlier sections come together into one operation that has to be **all-or-nothing**: decrement stock for every item, create the order, create its line items — and if *any* part fails, none of it happened. That's a **database transaction** (`db.transaction`). Wrap the whole thing; a throw anywhere rolls back every write, so a mid-order failure can't leave stock decremented for an order that was never created.
+
+**Concurrency is the subtle part.** The naive way to check stock is "read the stock, if it's enough, then decrement it" — but that's a **race condition**: two buyers both read stock 1, both decide it's fine, both decrement, and you've sold the last copy twice (stock goes to −1). The fix is to make the check and the decrement a **single atomic statement**:
+
+```ts
+UPDATE books SET stock = stock - :qty
+WHERE id = :id AND deletedAt IS NULL AND stock >= :qty
+RETURNING title, price
+```
+
+If the row comes back, you got the stock (and the snapshot); if it comes back empty, there wasn't enough — throw and roll back. Under Postgres' default READ COMMITTED, a second transaction hitting the same row **waits** for the first to commit, then **re-checks** `stock >= qty` against the now-updated value — so it correctly fails instead of overselling. (Verified: 10 concurrent orders against stock 3 → exactly 3 succeed, 7 get a 400, stock lands on 0, never negative.) The one statement does validation + snapshot + decrement together, which is what closes the race.
+
+**Snapshots make the order a permanent record.** Each `order_item` stores the `title` and `price` **as they were at purchase**, not just a `bookId` pointer. So when a book's price later changes, or it's soft-deleted, past orders still show what was actually bought and paid — the receipt never mutates. This is the transactional-vs-catalog-data principle from section 11, applied.
+
+**Cancel needs its own kind of locking.** Cancelling restocks inventory, so two concurrent cancels of the same order would restock **twice**. Here the atomic-conditional-UPDATE trick doesn't fit as neatly (there's a read + several writes), so instead lock the order row up front with `SELECT ... FOR UPDATE`: the second cancel blocks, then re-reads the status as `cancelled` and returns a 409. Same goal as the stock UPDATE — serialize the racers — just via an explicit row lock.
+
+**Keep side effects off the request and after the commit.** The confirmation/status emails are enqueued (section 20), not sent inline, and enqueued **after** the transaction commits and as fire-and-forget — so a slow mailer never blocks checkout, and a Redis hiccup can't fail an order that already succeeded. The rule: do the durable, must-succeed work inside the transaction; do the best-effort notifications after it.
+
+One design choice worth noting: **cancellation lives on its own endpoint**, not the generic status-change endpoint, because it has a side effect (restock) and looser authorization (a buyer can cancel their own order, but only an admin advances fulfillment). Modelling status as a small transition map (`pending→paid→shipped`) keeps illegal jumps out, and routing `cancelled` through the dedicated cancel path keeps the restock logic in exactly one place.
+
 ---
 
 *Field notes from building the Book Store API — kept as a quick reference for next time.*
