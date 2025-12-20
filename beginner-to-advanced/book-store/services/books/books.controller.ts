@@ -7,7 +7,7 @@ import {
   type NewBook,
   type UpdateBook,
 } from "./books.model";
-import { authorsTable } from "@/features/authors/authors.model";
+import { authorsTable } from "@/services/authors/authors.model";
 import type { Uuid } from "@/libs/validators";
 import { ApiError } from "@/libs/error";
 import { getCurrentUser } from "@/libs/user";

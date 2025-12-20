@@ -1,7 +1,7 @@
 import { date, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { usersTable } from "@/features/users/users.model";
+import { usersTable } from "@/services/users/users.model";
 
 export const authorsTable = pgTable("authors", {
   id: uuid().primaryKey().defaultRandom(),

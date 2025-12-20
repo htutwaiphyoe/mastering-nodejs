@@ -5,7 +5,7 @@ import {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-} from "@/features/users/users.model";
+} from "@/services/users/users.model";
 import {
   signup,
   login,

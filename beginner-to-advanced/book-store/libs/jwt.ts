@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { env } from "@/libs/env";
-import type { UserRole } from "@/features/users/users.model";
+import type { UserRole } from "@/services/users/users.model";
 
 export type JwtPayload = { sub: string; role: UserRole };
 
