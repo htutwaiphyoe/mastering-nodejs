@@ -14,27 +14,22 @@ import {
 
 const router = express.Router();
 
-router.post("/", authenticate, validate("body", createOrderSchema), createOrder);
+router.use(authenticate);
 
-router.get("/", authenticate, getOrders);
+router.post("/", validate("body", createOrderSchema), createOrder);
 
-router.get(
-  "/:id",
-  authenticate,
-  validate("params", idParamSchema),
-  getOrderById,
-);
+router.get("/", getOrders);
+
+router.get("/:id", validate("params", idParamSchema), getOrderById);
 
 router.patch(
   "/:id/cancel",
-  authenticate,
   validate("params", idParamSchema),
   cancelOrder,
 );
 
 router.patch(
   "/:id/status",
-  authenticate,
   authorize("admin"),
   validate("params", idParamSchema),
   validate("body", updateOrderStatusSchema),
