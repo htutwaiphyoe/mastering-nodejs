@@ -15,13 +15,14 @@ import {
 
 const router = express.Router();
 
-router.get("/me", authenticate, me);
+router.use(authenticate);
 
-router.get("/:id", authenticate, validate("params", idParamSchema), getUserById);
+router.get("/me", me);
+
+router.get("/:id", validate("params", idParamSchema), getUserById);
 
 router.patch(
   "/:id",
-  authenticate,
   validate("params", idParamSchema),
   validate("body", updateUserSchema),
   updateUser,
@@ -29,14 +30,12 @@ router.patch(
 
 router.patch(
   "/:id/deactivate",
-  authenticate,
   validate("params", idParamSchema),
   deactivateUser,
 );
 
 router.patch(
   "/:id/reactivate",
-  authenticate,
   authorize("admin"),
   validate("params", idParamSchema),
   reactivateUser,
@@ -44,7 +43,6 @@ router.patch(
 
 router.patch(
   "/:id/role",
-  authenticate,
   authorize("admin"),
   validate("params", idParamSchema),
   validate("body", updateUserRoleSchema),
