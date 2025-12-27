@@ -48,6 +48,16 @@ export const errorHandler = (
     });
   }
 
+  const status = (err as { status?: number; statusCode?: number })?.status ??
+    (err as { statusCode?: number })?.statusCode;
+
+  if (typeof status === "number" && status >= 400 && status < 500) {
+    return res.status(status).json({
+      status: "error",
+      message: err instanceof Error ? err.message : "Invalid request.",
+    });
+  }
+
   req.log.error({ err }, "Unhandled error");
 
   res.status(500).json({

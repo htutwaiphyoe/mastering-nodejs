@@ -3,6 +3,7 @@ import helmet from "helmet";
 import cors from "cors";
 import { pinoHttp } from "pino-http";
 import cookieParser from "cookie-parser";
+import compression from "compression";
 import { env } from "@/libs/env";
 import { logger } from "@/libs/logger";
 import { apiLimiter, authLimiter } from "@/middlewares/rate-limit";
@@ -16,6 +17,8 @@ import { errorHandler, notFoundHandler } from "@/middlewares/error-handler";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,
@@ -27,7 +30,9 @@ app.use(helmet());
 
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 
-app.use(express.json());
+app.use(compression());
+
+app.use(express.json({ limit: "10kb" }));
 
 app.use(cookieParser());
 
