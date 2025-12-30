@@ -6,6 +6,7 @@ const url = new URL(env.REDIS_URL);
 export const connection: ConnectionOptions = {
   host: url.hostname,
   port: Number(url.port) || 6379,
+  db: url.pathname.length > 1 ? Number(url.pathname.slice(1)) : 0,
 };
 
 export type PasswordResetJob = {
