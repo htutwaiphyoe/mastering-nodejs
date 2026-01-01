@@ -3,6 +3,7 @@ import { booksTable } from "@/services/books/books.model";
 import { usersTable } from "@/services/users/users.model";
 import { refreshTokensTable } from "@/services/auth/auth.model";
 import { ordersTable, orderItemsTable } from "@/services/orders/orders.model";
+import { reviewsTable } from "@/services/reviews/reviews.model";
 
 export {
   authorsTable,
@@ -11,4 +12,5 @@ export {
   refreshTokensTable,
   ordersTable,
   orderItemsTable,
+  reviewsTable,
 };

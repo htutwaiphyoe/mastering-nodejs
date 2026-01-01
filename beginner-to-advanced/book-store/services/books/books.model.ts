@@ -27,6 +27,8 @@ export const booksTable = pgTable(
     price: numeric({ precision: 10, scale: 2 }).notNull(),
     publishedDate: date().notNull(),
     stock: integer().notNull().default(0),
+    ratingsAverage: numeric({ precision: 3, scale: 2 }).notNull().default("0"),
+    ratingsCount: integer().notNull().default(0),
     createdBy: uuid().references(() => usersTable.id),
     createdAt: timestamp().defaultNow().notNull(),
     updatedAt: timestamp()
