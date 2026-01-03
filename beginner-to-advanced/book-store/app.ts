@@ -13,6 +13,10 @@ import authorRouter from "@/services/authors/authors.route";
 import authRouter from "@/services/auth/auth.route";
 import userRouter from "@/services/users/users.route";
 import orderRouter from "@/services/orders/orders.route";
+import {
+  bookReviewsRouter,
+  reviewsRouter,
+} from "@/services/reviews/reviews.route";
 import { errorHandler, notFoundHandler } from "@/middlewares/error-handler";
 
 export const app = express();
@@ -49,6 +53,10 @@ app.use("/auth", authLimiter, authRouter);
 app.use("/users", userRouter);
 
 app.use("/orders", orderRouter);
+
+app.use("/books/:bookId/reviews", bookReviewsRouter);
+
+app.use("/reviews", reviewsRouter);
 
 app.use(notFoundHandler);
 

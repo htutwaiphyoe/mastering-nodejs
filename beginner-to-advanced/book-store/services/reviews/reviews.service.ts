@@ -4,7 +4,11 @@ import { reviewsTable, type Review } from "./reviews.model";
 import { booksTable } from "@/services/books/books.model";
 import { usersTable, type AuthUser } from "@/services/users/users.model";
 import { ordersTable, orderItemsTable } from "@/services/orders/orders.model";
-import type { CreateReviewInput, UpdateReviewInput, ReviewsQuery } from "./reviews.dto";
+import type {
+  CreateReviewBody,
+  UpdateReviewBody,
+  ReviewsQuery,
+} from "./reviews.dto";
 import { assertOwnership } from "@/libs/role";
 import { ApiError } from "@/libs/error";
 
@@ -56,7 +60,7 @@ const hasPurchased = async (userId: string, bookId: string) => {
 export const createReview = async (params: {
   userId: string;
   bookId: string;
-  input: CreateReviewInput;
+  input: CreateReviewBody;
 }): Promise<Review> => {
   const { userId, bookId, input } = params;
 
@@ -78,7 +82,7 @@ export const createReview = async (params: {
   });
 };
 
-export const listBookReviews = async (bookId: string, query: ReviewsQuery) => {
+export const getBookReviews = async (bookId: string, query: ReviewsQuery) => {
   if (!(await findActiveBook(bookId))) {
     throw ApiError.notFound("Book is not found.");
   }
@@ -127,7 +131,7 @@ const findReviewOrThrow = async (id: string): Promise<Review> => {
 export const updateReview = async (params: {
   id: string;
   user: AuthUser;
-  input: UpdateReviewInput;
+  input: UpdateReviewBody;
 }): Promise<Review> => {
   const existing = await findReviewOrThrow(params.id);
   assertOwnership(params.user, existing.userId);

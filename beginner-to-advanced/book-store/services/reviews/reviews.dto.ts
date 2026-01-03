@@ -12,7 +12,7 @@ export const createReviewSchema = z.object({
     .optional(),
 });
 
-export type CreateReviewInput = z.infer<typeof createReviewSchema>;
+export type CreateReviewBody = z.infer<typeof createReviewSchema>;
 
 export const updateReviewSchema = createReviewSchema
   .partial()
@@ -20,7 +20,7 @@ export const updateReviewSchema = createReviewSchema
     message: "At least one field is required to update.",
   });
 
-export type UpdateReviewInput = z.infer<typeof updateReviewSchema>;
+export type UpdateReviewBody = z.infer<typeof updateReviewSchema>;
 
 export const reviewsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),

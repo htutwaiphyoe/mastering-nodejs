@@ -3,13 +3,13 @@ import type { Uuid } from "@/libs/validators";
 import { getCurrentUser } from "@/libs/user";
 import {
   reviewsQuerySchema,
-  type CreateReviewInput,
-  type UpdateReviewInput,
+  type CreateReviewBody,
+  type UpdateReviewBody,
 } from "./reviews.dto";
 import * as reviewsService from "./reviews.service";
 
 export const createReview = async (
-  req: Request<{ bookId: Uuid }, unknown, CreateReviewInput>,
+  req: Request<{ bookId: Uuid }, unknown, CreateReviewBody>,
   res: Response,
 ) => {
   const currentUser = getCurrentUser(req);
@@ -32,7 +32,7 @@ export const getReviews = async (
 ) => {
   const query = reviewsQuerySchema.parse(req.query);
 
-  const { reviews, total } = await reviewsService.listBookReviews(
+  const { reviews, total } = await reviewsService.getBookReviews(
     req.params.bookId,
     query,
   );
@@ -50,7 +50,7 @@ export const getReviews = async (
 };
 
 export const updateReview = async (
-  req: Request<{ id: Uuid }, unknown, UpdateReviewInput>,
+  req: Request<{ id: Uuid }, unknown, UpdateReviewBody>,
   res: Response,
 ) => {
   const currentUser = getCurrentUser(req);
