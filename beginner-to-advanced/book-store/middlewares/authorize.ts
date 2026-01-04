@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import type { UserRole } from "@/services/users/users.model";
+import type { UserRole } from "@/features/users/users.model";
 import { getCurrentUser } from "@/libs/user";
 import { ApiError } from "@/libs/error";
 

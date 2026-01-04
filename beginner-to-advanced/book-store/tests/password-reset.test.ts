@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "bun:test";
 import { eq } from "drizzle-orm";
 import db from "@/db";
-import { usersTable } from "@/services/users/users.model";
+import { usersTable } from "@/features/users/users.model";
 import { generateToken } from "@/libs/token";
 import { api, truncateAll, createUser } from "./helpers";
 

@@ -1,5 +1,5 @@
 import { pgTable, timestamp, uuid, varchar, index } from "drizzle-orm/pg-core";
-import { usersTable } from "@/services/users/users.model";
+import { usersTable } from "@/features/users/users.model";
 
 export const refreshTokensTable = pgTable(
   "refresh_tokens",

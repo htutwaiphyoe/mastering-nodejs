@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
 import { and, asc, count, desc, eq, gte, isNull, sql } from "drizzle-orm";
 import db from "@/db";
-import { booksTable } from "@/services/books/books.model";
-import { usersTable } from "@/services/users/users.model";
+import { booksTable } from "@/features/books/books.model";
+import { usersTable } from "@/features/users/users.model";
 import {
   ordersTable,
   orderItemsTable,

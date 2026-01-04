@@ -1,9 +1,9 @@
 import { and, asc, count, desc, eq, isNull, ne, sql } from "drizzle-orm";
 import db from "@/db";
 import { reviewsTable, type Review } from "./reviews.model";
-import { booksTable } from "@/services/books/books.model";
-import { usersTable, type AuthUser } from "@/services/users/users.model";
-import { ordersTable, orderItemsTable } from "@/services/orders/orders.model";
+import { booksTable } from "@/features/books/books.model";
+import { usersTable, type AuthUser } from "@/features/users/users.model";
+import { ordersTable, orderItemsTable } from "@/features/orders/orders.model";
 import type {
   CreateReviewBody,
   UpdateReviewBody,

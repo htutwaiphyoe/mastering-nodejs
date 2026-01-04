@@ -10,7 +10,7 @@ import {
   booksTable,
   booksQuerySchema,
   bookSortColumns,
-} from "@/services/books/books.model";
+} from "@/features/books/books.model";
 import type { Uuid } from "@/libs/validators";
 import { ApiError } from "@/libs/error";
 import { getCurrentUser } from "@/libs/user";

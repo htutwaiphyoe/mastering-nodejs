@@ -5,9 +5,9 @@ import db from "@/db";
 import {
   usersTable,
   type UserRole,
-} from "@/services/users/users.model";
-import { authorsTable } from "@/services/authors/authors.model";
-import { booksTable } from "@/services/books/books.model";
+} from "@/features/users/users.model";
+import { authorsTable } from "@/features/authors/authors.model";
+import { booksTable } from "@/features/books/books.model";
 
 export const api = request(app);
 

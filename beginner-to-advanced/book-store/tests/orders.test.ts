@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "bun:test";
 import { eq } from "drizzle-orm";
 import db from "@/db";
-import { booksTable } from "@/services/books/books.model";
+import { booksTable } from "@/features/books/books.model";
 import { api, truncateAll, createUser, seedBook } from "./helpers";
 
 beforeEach(truncateAll);

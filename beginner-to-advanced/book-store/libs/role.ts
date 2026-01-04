@@ -1,4 +1,4 @@
-import type { AuthUser } from "@/services/users/users.model";
+import type { AuthUser } from "@/features/users/users.model";
 import { ApiError } from "@/libs/error";
 
 export const assertOwnership = (

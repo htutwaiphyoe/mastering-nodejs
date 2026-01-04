@@ -1,7 +1,7 @@
 import { or, lt, isNotNull } from "drizzle-orm";
 import db from "@/db";
-import { refreshTokensTable } from "@/services/auth/auth.model";
-import { usersTable } from "@/services/users/users.model";
+import { refreshTokensTable } from "@/features/auth/auth.model";
+import { usersTable } from "@/features/users/users.model";
 import { logger } from "@/libs/logger";
 
 export const cleanupExpiredTokens = async (): Promise<void> => {

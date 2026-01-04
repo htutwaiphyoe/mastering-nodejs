@@ -8,8 +8,8 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { usersTable } from "@/services/users/users.model";
-import { booksTable } from "@/services/books/books.model";
+import { usersTable } from "@/features/users/users.model";
+import { booksTable } from "@/features/books/books.model";
 
 export const reviewsTable = pgTable(
   "reviews",

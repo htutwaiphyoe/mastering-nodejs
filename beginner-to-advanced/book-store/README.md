@@ -162,7 +162,7 @@ book-store/
 ├── worker.ts           # background worker (BullMQ consumer + cron)
 ├── db/                 # Drizzle client + schema aggregation
 ├── drizzle/            # generated SQL migrations
-├── services/           # domain modules — <service>/{model,controller,route}.ts
+├── features/           # domain modules — <feature>/{model,dto,service,controller,route}.ts
 │   ├── auth/  books/  authors/  users/  orders/  health/
 ├── middlewares/        # authenticate, authorize, validate, error-handler, rate-limit
 ├── libs/               # shared helpers (env, jwt, token, password, error, logger, queue, mailer, ...)

@@ -9,7 +9,7 @@ import {
   type ForgotPasswordInput,
   type ResetPasswordInput,
   type UserRole,
-} from "@/services/users/users.model";
+} from "@/features/users/users.model";
 import { refreshTokensTable } from "./auth.model";
 import { COOKIES } from "@/constants";
 import { hashPassword, verifyPassword } from "@/libs/password";

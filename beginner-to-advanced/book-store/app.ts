@@ -7,16 +7,16 @@ import compression from "compression";
 import { env } from "@/libs/env";
 import { logger } from "@/libs/logger";
 import { apiLimiter, authLimiter } from "@/middlewares/rate-limit";
-import healthRouter from "@/services/health/health.route";
-import bookRouter from "@/services/books/books.route";
-import authorRouter from "@/services/authors/authors.route";
-import authRouter from "@/services/auth/auth.route";
-import userRouter from "@/services/users/users.route";
-import orderRouter from "@/services/orders/orders.route";
+import healthRouter from "@/features/health/health.route";
+import bookRouter from "@/features/books/books.route";
+import authorRouter from "@/features/authors/authors.route";
+import authRouter from "@/features/auth/auth.route";
+import userRouter from "@/features/users/users.route";
+import orderRouter from "@/features/orders/orders.route";
 import {
   bookReviewsRouter,
   reviewsRouter,
-} from "@/services/reviews/reviews.route";
+} from "@/features/reviews/reviews.route";
 import { errorHandler, notFoundHandler } from "@/middlewares/error-handler";
 
 export const app = express();

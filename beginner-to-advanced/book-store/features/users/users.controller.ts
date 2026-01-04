@@ -7,7 +7,7 @@ import {
   type UpdateUserInput,
   type UpdateUserRoleInput,
 } from "./users.model";
-import { refreshTokensTable } from "@/services/auth/auth.model";
+import { refreshTokensTable } from "@/features/auth/auth.model";
 import type { Uuid } from "@/libs/validators";
 import { getCurrentUser } from "@/libs/user";
 import { ApiError } from "@/libs/error";
