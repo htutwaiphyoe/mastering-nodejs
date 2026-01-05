@@ -1,55 +1,26 @@
 import type { Request, Response } from "express";
-import db from "@/db";
-import {
-  authorsTable,
-  authorsQuerySchema,
-  type NewAuthor,
-  type UpdateAuthor,
-} from "./authors.model";
-import {
-  booksTable,
-  booksQuerySchema,
-  bookSortColumns,
-} from "@/features/books/books.model";
 import type { Uuid } from "@/libs/validators";
-import { ApiError } from "@/libs/error";
 import { getCurrentUser } from "@/libs/user";
-import { assertOwnership } from "@/libs/role";
-import { and, asc, count, desc, eq, ilike, isNull } from "drizzle-orm";
+import {
+  authorsQuerySchema,
+  type CreateAuthorBody,
+  type UpdateAuthorBody,
+} from "./authors.dto";
+import { booksQuerySchema } from "@/features/books/books.model";
+import * as authorsService from "./authors.service";
 
-const SORTABLE = {
-  name: authorsTable.name,
-  email: authorsTable.email,
-  birthDate: authorsTable.birthDate,
-  createdAt: authorsTable.createdAt,
-};
+export const getAuthors = async (req: Request, res: Response) => {
+  const query = authorsQuerySchema.parse(req.query);
 
-export const getAllAuthors = async (req: Request, res: Response) => {
-  const { page, limit, sortBy, orderBy } = authorsQuerySchema.parse(req.query);
-  const offset = (page - 1) * limit;
-
-  const where = isNull(authorsTable.deletedAt);
-
-  const $orderBy = (orderBy === "asc" ? asc : desc)(SORTABLE[sortBy]);
-
-  const [authors, [{ total }]] = await Promise.all([
-    db
-      .select()
-      .from(authorsTable)
-      .where(where)
-      .orderBy($orderBy)
-      .limit(limit)
-      .offset(offset),
-    db.select({ total: count() }).from(authorsTable).where(where),
-  ]);
+  const { authors, total } = await authorsService.getAuthors(query);
 
   res.status(200).json({
     status: "success",
     pagination: {
-      page,
-      limit,
+      page: query.page,
+      limit: query.limit,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / query.limit),
     },
     authors,
   });
@@ -59,147 +30,72 @@ export const getAuthorById = async (
   req: Request<{ id: Uuid }>,
   res: Response,
 ) => {
-  const { id } = req.params;
+  const author = await authorsService.getAuthor(req.params.id);
 
-  const [author] = await db
-    .select()
-    .from(authorsTable)
-    .where(and(eq(authorsTable.id, id), isNull(authorsTable.deletedAt)))
-    .limit(1);
-
-  if (!author) {
-    throw ApiError.notFound("Author is not found.");
-  }
-
-  res.status(200).json({
-    status: "success",
-    author,
-  });
+  res.status(200).json({ status: "success", author });
 };
 
 export const createAuthor = async (
-  req: Request<{}, unknown, NewAuthor>,
+  req: Request<{}, unknown, CreateAuthorBody>,
   res: Response,
 ) => {
   const currentUser = getCurrentUser(req);
 
-  const [author] = await db
-    .insert(authorsTable)
-    .values({ ...req.body, createdBy: currentUser.id })
-    .returning();
-
-  res.status(201).json({
-    status: "success",
-    author,
+  const author = await authorsService.createAuthor({
+    userId: currentUser.id,
+    body: req.body,
   });
+
+  res.status(201).json({ status: "success", author });
 };
 
 export const updateAuthor = async (
-  req: Request<{ id: Uuid }, unknown, UpdateAuthor>,
+  req: Request<{ id: Uuid }, unknown, UpdateAuthorBody>,
   res: Response,
 ) => {
-  const { id } = req.params;
   const currentUser = getCurrentUser(req);
 
-  const [existing] = await db
-    .select({ createdBy: authorsTable.createdBy })
-    .from(authorsTable)
-    .where(and(eq(authorsTable.id, id), isNull(authorsTable.deletedAt)))
-    .limit(1);
-
-  if (!existing) {
-    throw ApiError.notFound("Author is not found.");
-  }
-
-  assertOwnership(currentUser, existing.createdBy);
-
-  const [author] = await db
-    .update(authorsTable)
-    .set(req.body)
-    .where(eq(authorsTable.id, id))
-    .returning();
-
-  res.status(200).json({
-    status: "success",
-    author,
+  const author = await authorsService.updateAuthor({
+    id: req.params.id,
+    user: currentUser,
+    body: req.body,
   });
+
+  res.status(200).json({ status: "success", author });
 };
 
 export const deleteAuthor = async (
   req: Request<{ id: Uuid }>,
   res: Response,
 ) => {
-  const { id } = req.params;
   const currentUser = getCurrentUser(req);
 
-  const [existing] = await db
-    .select({ createdBy: authorsTable.createdBy })
-    .from(authorsTable)
-    .where(and(eq(authorsTable.id, id), isNull(authorsTable.deletedAt)))
-    .limit(1);
-
-  if (!existing) {
-    throw ApiError.notFound("Author is not found.");
-  }
-
-  assertOwnership(currentUser, existing.createdBy);
-
-  await db
-    .update(authorsTable)
-    .set({ deletedAt: new Date() })
-    .where(eq(authorsTable.id, id));
-
-  res.status(200).json({
-    status: "success",
+  await authorsService.deleteAuthor({
+    id: req.params.id,
+    user: currentUser,
   });
+
+  res.status(200).json({ status: "success" });
 };
 
 export const getAuthorBooks = async (
   req: Request<{ id: Uuid }>,
   res: Response,
 ) => {
-  const { id } = req.params;
-  const { search, page, limit, sortBy, orderBy } = booksQuerySchema.parse(
-    req.query,
+  const query = booksQuerySchema.parse(req.query);
+
+  const { books, total } = await authorsService.getAuthorBooks(
+    req.params.id,
+    query,
   );
-  const offset = (page - 1) * limit;
-
-  const [author] = await db
-    .select()
-    .from(authorsTable)
-    .where(and(eq(authorsTable.id, id), isNull(authorsTable.deletedAt)))
-    .limit(1);
-
-  if (!author) {
-    throw ApiError.notFound("Author is not found.");
-  }
-
-  const where = and(
-    eq(booksTable.authorId, id),
-    isNull(booksTable.deletedAt),
-    search ? ilike(booksTable.title, `%${search}%`) : undefined,
-  );
-
-  const $orderBy = (orderBy === "asc" ? asc : desc)(bookSortColumns[sortBy]);
-
-  const [books, [{ total }]] = await Promise.all([
-    db
-      .select()
-      .from(booksTable)
-      .where(where)
-      .orderBy($orderBy)
-      .limit(limit)
-      .offset(offset),
-    db.select({ total: count() }).from(booksTable).where(where),
-  ]);
 
   res.status(200).json({
     status: "success",
     pagination: {
-      page,
-      limit,
+      page: query.page,
+      limit: query.limit,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / query.limit),
     },
     books,
   });

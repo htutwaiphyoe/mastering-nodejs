@@ -6,20 +6,20 @@ import { idParamSchema } from "@/libs/validators";
 import {
   createAuthor,
   deleteAuthor,
-  getAllAuthors,
+  getAuthors,
   getAuthorBooks,
   getAuthorById,
   updateAuthor,
 } from "./authors.controller";
 import {
   authorsQuerySchema,
-  insertAuthorSchema,
+  createAuthorSchema,
   updateAuthorSchema,
-} from "./authors.model";
+} from "./authors.dto";
 
 const router = express.Router();
 
-router.get("/", validate("query", authorsQuerySchema), getAllAuthors);
+router.get("/", validate("query", authorsQuerySchema), getAuthors);
 
 router.get("/:id", validate("params", idParamSchema), getAuthorById);
 
@@ -29,7 +29,7 @@ router.post(
   "/",
   authenticate,
   authorize("admin", "publisher"),
-  validate("body", insertAuthorSchema),
+  validate("body", createAuthorSchema),
   createAuthor,
 );
 
