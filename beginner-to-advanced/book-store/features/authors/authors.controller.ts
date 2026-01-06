@@ -6,7 +6,7 @@ import {
   type CreateAuthorBody,
   type UpdateAuthorBody,
 } from "./authors.dto";
-import { booksQuerySchema } from "@/features/books/books.model";
+import { booksQuerySchema } from "@/features/books/books.dto";
 import * as authorsService from "./authors.service";
 
 export const getAuthors = async (req: Request, res: Response) => {

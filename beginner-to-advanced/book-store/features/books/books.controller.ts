@@ -1,50 +1,25 @@
 import type { Request, Response } from "express";
-import db from "@/db";
-import {
-  booksTable,
-  booksQuerySchema,
-  bookSortColumns,
-  type NewBook,
-  type UpdateBook,
-} from "./books.model";
-import { authorsTable } from "@/features/authors/authors.model";
 import type { Uuid } from "@/libs/validators";
-import { ApiError } from "@/libs/error";
 import { getCurrentUser } from "@/libs/user";
-import { assertOwnership } from "@/libs/role";
-import { and, asc, count, desc, eq, ilike, isNull } from "drizzle-orm";
+import {
+  booksQuerySchema,
+  type CreateBookBody,
+  type UpdateBookBody,
+} from "./books.dto";
+import * as booksService from "./books.service";
 
 export const getBooks = async (req: Request, res: Response) => {
-  const { search, page, limit, sortBy, orderBy } = booksQuerySchema.parse(
-    req.query,
-  );
-  const offset = (page - 1) * limit;
+  const query = booksQuerySchema.parse(req.query);
 
-  const where = and(
-    isNull(booksTable.deletedAt),
-    search ? ilike(booksTable.title, `%${search}%`) : undefined,
-  );
-
-  const $orderBy = (orderBy === "asc" ? asc : desc)(bookSortColumns[sortBy]);
-
-  const [books, [{ total }]] = await Promise.all([
-    db
-      .select()
-      .from(booksTable)
-      .where(where)
-      .orderBy($orderBy)
-      .limit(limit)
-      .offset(offset),
-    db.select({ total: count() }).from(booksTable).where(where),
-  ]);
+  const { books, total } = await booksService.getBooks(query);
 
   res.status(200).json({
     status: "success",
     pagination: {
-      page,
-      limit,
+      page: query.page,
+      limit: query.limit,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / query.limit),
     },
     books,
   });
@@ -54,98 +29,44 @@ export const getBookById = async (
   req: Request<{ id: Uuid }>,
   res: Response,
 ) => {
-  const { id } = req.params;
+  const book = await booksService.getBook(req.params.id);
 
-  const [data] = await db
-    .select()
-    .from(booksTable)
-    .leftJoin(authorsTable, eq(booksTable.authorId, authorsTable.id))
-    .where(and(eq(booksTable.id, id), isNull(booksTable.deletedAt)))
-    .limit(1);
-
-  if (!data) {
-    throw ApiError.notFound("Book is not found.");
-  }
-
-  res.status(200).json({
-    status: "success",
-    book: {
-      ...data.books,
-      author: data.authors,
-    },
-  });
+  res.status(200).json({ status: "success", book });
 };
 
 export const createBook = async (
-  req: Request<{}, unknown, NewBook>,
+  req: Request<{}, unknown, CreateBookBody>,
   res: Response,
 ) => {
   const currentUser = getCurrentUser(req);
 
-  const [book] = await db
-    .insert(booksTable)
-    .values({ ...req.body, createdBy: currentUser.id })
-    .returning();
-
-  res.status(201).json({
-    status: "success",
-    book,
+  const book = await booksService.createBook({
+    userId: currentUser.id,
+    body: req.body,
   });
+
+  res.status(201).json({ status: "success", book });
 };
 
 export const updateBook = async (
-  req: Request<{ id: Uuid }, unknown, UpdateBook>,
+  req: Request<{ id: Uuid }, unknown, UpdateBookBody>,
   res: Response,
 ) => {
-  const { id } = req.params;
   const currentUser = getCurrentUser(req);
 
-  const [existing] = await db
-    .select({ createdBy: booksTable.createdBy })
-    .from(booksTable)
-    .where(and(eq(booksTable.id, id), isNull(booksTable.deletedAt)))
-    .limit(1);
-
-  if (!existing) {
-    throw ApiError.notFound("Book is not found.");
-  }
-
-  assertOwnership(currentUser, existing.createdBy);
-
-  const [book] = await db
-    .update(booksTable)
-    .set(req.body)
-    .where(eq(booksTable.id, id))
-    .returning();
-
-  res.status(200).json({
-    status: "success",
-    book,
+  const book = await booksService.updateBook({
+    id: req.params.id,
+    user: currentUser,
+    body: req.body,
   });
+
+  res.status(200).json({ status: "success", book });
 };
 
 export const deleteBook = async (req: Request<{ id: Uuid }>, res: Response) => {
-  const { id } = req.params;
   const currentUser = getCurrentUser(req);
 
-  const [existing] = await db
-    .select({ createdBy: booksTable.createdBy })
-    .from(booksTable)
-    .where(and(eq(booksTable.id, id), isNull(booksTable.deletedAt)))
-    .limit(1);
+  await booksService.deleteBook({ id: req.params.id, user: currentUser });
 
-  if (!existing) {
-    throw ApiError.notFound("Book is not found.");
-  }
-
-  assertOwnership(currentUser, existing.createdBy);
-
-  await db
-    .update(booksTable)
-    .set({ deletedAt: new Date() })
-    .where(eq(booksTable.id, id));
-
-  res.status(200).json({
-    status: "success",
-  });
+  res.status(200).json({ status: "success" });
 };

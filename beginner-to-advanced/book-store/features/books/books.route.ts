@@ -12,9 +12,9 @@ import {
 } from "./books.controller";
 import {
   booksQuerySchema,
-  insertBookSchema,
+  createBookSchema,
   updateBookSchema,
-} from "./books.model";
+} from "./books.dto";
 
 const router = express.Router();
 
@@ -26,7 +26,7 @@ router.post(
   "/",
   authenticate,
   authorize("admin", "publisher"),
-  validate("body", insertBookSchema),
+  validate("body", createBookSchema),
   createBook,
 );
 

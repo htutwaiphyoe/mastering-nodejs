@@ -6,11 +6,8 @@ import type {
   UpdateAuthorBody,
   AuthorsQuery,
 } from "./authors.dto";
-import {
-  booksTable,
-  bookSortColumns,
-  type BooksQuery,
-} from "@/features/books/books.model";
+import { booksTable, bookSortColumns } from "@/features/books/books.model";
+import type { BooksQuery } from "@/features/books/books.dto";
 import { type AuthUser } from "@/features/users/users.model";
 import { assertOwnership } from "@/libs/role";
 import { ApiError } from "@/libs/error";
