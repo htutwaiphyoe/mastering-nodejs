@@ -8,6 +8,7 @@ import {
   deleteBook,
   getBookById,
   getBooks,
+  getBooksByAuthor,
   updateBook,
 } from "./books.controller";
 import {
@@ -48,3 +49,7 @@ router.delete(
 );
 
 export default router;
+
+export const authorBooksRouter = express.Router({ mergeParams: true });
+
+authorBooksRouter.get("/", validate("params", idParamSchema), getBooksByAuthor);

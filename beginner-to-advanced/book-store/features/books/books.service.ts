@@ -31,6 +31,41 @@ export const getBooks = async (query: BooksQuery) => {
   return { books, total };
 };
 
+export const getBooksByAuthor = async (authorId: string, query: BooksQuery) => {
+  const [author] = await db
+    .select({ id: authorsTable.id })
+    .from(authorsTable)
+    .where(and(eq(authorsTable.id, authorId), isNull(authorsTable.deletedAt)))
+    .limit(1);
+
+  if (!author) {
+    throw ApiError.notFound("Author is not found.");
+  }
+
+  const offset = (query.page - 1) * query.limit;
+  const where = and(
+    eq(booksTable.authorId, authorId),
+    isNull(booksTable.deletedAt),
+    query.search ? ilike(booksTable.title, `%${query.search}%`) : undefined,
+  );
+  const orderBy = (query.orderBy === "asc" ? asc : desc)(
+    bookSortColumns[query.sortBy],
+  );
+
+  const [books, [{ total }]] = await Promise.all([
+    db
+      .select()
+      .from(booksTable)
+      .where(where)
+      .orderBy(orderBy)
+      .limit(query.limit)
+      .offset(offset),
+    db.select({ total: count() }).from(booksTable).where(where),
+  ]);
+
+  return { books, total };
+};
+
 export const getBook = async (id: string) => {
   const [data] = await db
     .select()

@@ -6,7 +6,6 @@ import {
   type CreateAuthorBody,
   type UpdateAuthorBody,
 } from "./authors.dto";
-import { booksQuerySchema } from "@/features/books/books.dto";
 import * as authorsService from "./authors.service";
 
 export const getAuthors = async (req: Request, res: Response) => {
@@ -76,27 +75,4 @@ export const deleteAuthor = async (
   });
 
   res.status(200).json({ status: "success" });
-};
-
-export const getAuthorBooks = async (
-  req: Request<{ id: Uuid }>,
-  res: Response,
-) => {
-  const query = booksQuerySchema.parse(req.query);
-
-  const { books, total } = await authorsService.getAuthorBooks(
-    req.params.id,
-    query,
-  );
-
-  res.status(200).json({
-    status: "success",
-    pagination: {
-      page: query.page,
-      limit: query.limit,
-      total,
-      totalPages: Math.ceil(total / query.limit),
-    },
-    books,
-  });
 };

@@ -34,6 +34,29 @@ export const getBookById = async (
   res.status(200).json({ status: "success", book });
 };
 
+export const getBooksByAuthor = async (
+  req: Request<{ id: Uuid }>,
+  res: Response,
+) => {
+  const query = booksQuerySchema.parse(req.query);
+
+  const { books, total } = await booksService.getBooksByAuthor(
+    req.params.id,
+    query,
+  );
+
+  res.status(200).json({
+    status: "success",
+    pagination: {
+      page: query.page,
+      limit: query.limit,
+      total,
+      totalPages: Math.ceil(total / query.limit),
+    },
+    books,
+  });
+};
+
 export const createBook = async (
   req: Request<{}, unknown, CreateBookBody>,
   res: Response,

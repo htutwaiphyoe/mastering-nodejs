@@ -8,7 +8,7 @@ import { env } from "@/libs/env";
 import { logger } from "@/libs/logger";
 import { apiLimiter, authLimiter } from "@/middlewares/rate-limit";
 import healthRouter from "@/features/health/health.route";
-import bookRouter from "@/features/books/books.route";
+import bookRouter, { authorBooksRouter } from "@/features/books/books.route";
 import authorRouter from "@/features/authors/authors.route";
 import authRouter from "@/features/auth/auth.route";
 import userRouter from "@/features/users/users.route";
@@ -53,6 +53,8 @@ app.use("/auth", authLimiter, authRouter);
 app.use("/users", userRouter);
 
 app.use("/orders", orderRouter);
+
+app.use("/authors/:id/books", authorBooksRouter);
 
 app.use("/books/:bookId/reviews", bookReviewsRouter);
 

@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, ilike, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
 import db from "@/db";
 import { authorsTable, type Author } from "./authors.model";
 import type {
@@ -6,8 +6,6 @@ import type {
   UpdateAuthorBody,
   AuthorsQuery,
 } from "./authors.dto";
-import { booksTable, bookSortColumns } from "@/features/books/books.model";
-import type { BooksQuery } from "@/features/books/books.dto";
 import { type AuthUser } from "@/features/users/users.model";
 import { assertOwnership } from "@/libs/role";
 import { ApiError } from "@/libs/error";
@@ -103,36 +101,4 @@ export const deleteAuthor = async (params: {
     .update(authorsTable)
     .set({ deletedAt: new Date() })
     .where(eq(authorsTable.id, params.id));
-};
-
-export const getAuthorBooks = async (id: string, query: BooksQuery) => {
-  await getAuthor(id);
-
-  const offset = (query.page - 1) * query.limit;
-
-  const where = and(
-    eq(booksTable.authorId, id),
-    isNull(booksTable.deletedAt),
-    query.search ? ilike(booksTable.title, `%${query.search}%`) : undefined,
-  );
-
-  const orderBy = (query.orderBy === "asc" ? asc : desc)(
-    bookSortColumns[query.sortBy],
-  );
-
-  const [books, [{ total }]] = await Promise.all([
-    db
-      .select()
-      .from(booksTable)
-      .where(where)
-      .orderBy(orderBy)
-      .limit(query.limit)
-      .offset(offset),
-    db.select({ total: count() }).from(booksTable).where(where),
-  ]);
-
-  return {
-    books,
-    total,
-  };
 };

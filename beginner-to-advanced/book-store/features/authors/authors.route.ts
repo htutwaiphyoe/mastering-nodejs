@@ -7,7 +7,6 @@ import {
   createAuthor,
   deleteAuthor,
   getAuthors,
-  getAuthorBooks,
   getAuthorById,
   updateAuthor,
 } from "./authors.controller";
@@ -22,8 +21,6 @@ const router = express.Router();
 router.get("/", validate("query", authorsQuerySchema), getAuthors);
 
 router.get("/:id", validate("params", idParamSchema), getAuthorById);
-
-router.get("/:id/books", validate("params", idParamSchema), getAuthorBooks);
 
 router.post(
   "/",
