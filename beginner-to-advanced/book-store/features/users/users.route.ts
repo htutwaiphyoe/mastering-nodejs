@@ -3,9 +3,9 @@ import { authenticate } from "@/middlewares/authenticate";
 import { authorize } from "@/middlewares/authorize";
 import { validate } from "@/middlewares/validate";
 import { idParamSchema } from "@/libs/validators";
-import { updateUserSchema, updateUserRoleSchema } from "./users.model";
+import { updateUserSchema, updateUserRoleSchema } from "./users.dto";
 import {
-  me,
+  getMe,
   getUserById,
   updateUser,
   deactivateUser,
@@ -17,7 +17,7 @@ const router = express.Router();
 
 router.use(authenticate);
 
-router.get("/me", me);
+router.get("/me", getMe);
 
 router.get("/:id", validate("params", idParamSchema), getUserById);
 

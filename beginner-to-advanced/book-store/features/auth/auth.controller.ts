@@ -4,12 +4,14 @@ import db from "@/db";
 import {
   usersTable,
   publicUserColumns,
-  type SignupInput,
-  type LoginInput,
-  type ForgotPasswordInput,
-  type ResetPasswordInput,
   type UserRole,
 } from "@/features/users/users.model";
+import {
+  type SignupBody,
+  type LoginBody,
+  type ForgotPasswordBody,
+  type ResetPasswordBody,
+} from "./auth.dto";
 import { refreshTokensTable } from "./auth.model";
 import { COOKIES } from "@/constants";
 import { hashPassword, verifyPassword } from "@/libs/password";
@@ -86,7 +88,7 @@ const readRefreshToken = (req: Request): string | undefined =>
   req.cookies?.[COOKIES.refresh.name] ?? req.body?.refreshToken;
 
 export const signup = async (
-  req: Request<{}, unknown, SignupInput>,
+  req: Request<{}, unknown, SignupBody>,
   res: Response,
 ) => {
   const { password, ...rest } = req.body;
@@ -113,7 +115,7 @@ export const signup = async (
 };
 
 export const login = async (
-  req: Request<{}, unknown, LoginInput>,
+  req: Request<{}, unknown, LoginBody>,
   res: Response,
 ) => {
   const { email, password } = req.body;
@@ -233,7 +235,7 @@ export const logout = async (req: Request, res: Response) => {
 };
 
 export const forgotPassword = async (
-  req: Request<{}, unknown, ForgotPasswordInput>,
+  req: Request<{}, unknown, ForgotPasswordBody>,
   res: Response,
 ) => {
   const { email } = req.body;
@@ -270,7 +272,7 @@ export const forgotPassword = async (
 };
 
 export const resetPassword = async (
-  req: Request<{}, unknown, ResetPasswordInput>,
+  req: Request<{}, unknown, ResetPasswordBody>,
   res: Response,
 ) => {
   const { token, password } = req.body;

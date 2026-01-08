@@ -5,7 +5,7 @@ import {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-} from "@/features/users/users.model";
+} from "./auth.dto";
 import {
   signup,
   login,
