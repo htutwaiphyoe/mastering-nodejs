@@ -1,35 +1,14 @@
 import type { Request, Response } from "express";
-import { and, eq, isNull } from "drizzle-orm";
-import db from "@/db";
-import {
-  usersTable,
-  publicUserColumns,
-  type UserRole,
-} from "@/features/users/users.model";
+import { COOKIES, MINUTE, DAY } from "@/constants";
+import { env } from "@/libs/env";
+import { ApiError } from "@/libs/error";
 import {
   type SignupBody,
   type LoginBody,
   type ForgotPasswordBody,
   type ResetPasswordBody,
 } from "./auth.dto";
-import { refreshTokensTable } from "./auth.model";
-import { COOKIES } from "@/constants";
-import { hashPassword, verifyPassword } from "@/libs/password";
-import { signAccessToken } from "@/libs/jwt";
-import {
-  generateToken,
-  hashToken,
-  refreshTokenExpiry,
-  resetTokenExpiry,
-} from "@/libs/token";
-import {
-  emailQueue,
-  PASSWORD_RESET_JOB,
-  type PasswordResetJob,
-} from "@/libs/queue";
-import { env } from "@/libs/env";
-import { ApiError } from "@/libs/error";
-import { DAY, MINUTE } from "@/constants";
+import * as authService from "./auth.service";
 
 const cookieBase = {
   httpOnly: true,
@@ -47,6 +26,7 @@ const setAuthCookies = (
     path: COOKIES.access.path,
     maxAge: env.ACCESS_TOKEN_TTL_MINUTES * MINUTE,
   });
+
   res.cookie(COOKIES.refresh.name, refreshToken, {
     ...cookieBase,
     path: COOKIES.refresh.path,
@@ -59,29 +39,11 @@ const clearAuthCookies = (res: Response) => {
     ...cookieBase,
     path: COOKIES.access.path,
   });
+
   res.clearCookie(COOKIES.refresh.name, {
     ...cookieBase,
     path: COOKIES.refresh.path,
   });
-};
-
-const issueTokens = async (
-  res: Response,
-  userId: string,
-  role: UserRole,
-) => {
-  const accessToken = signAccessToken({ sub: userId, role });
-  const { token: refreshToken, tokenHash } = generateToken();
-
-  await db.insert(refreshTokensTable).values({
-    userId,
-    tokenHash,
-    expiresAt: refreshTokenExpiry(),
-  });
-
-  setAuthCookies(res, accessToken, refreshToken);
-
-  return { accessToken, refreshToken };
 };
 
 const readRefreshToken = (req: Request): string | undefined =>
@@ -91,20 +53,11 @@ export const signup = async (
   req: Request<{}, unknown, SignupBody>,
   res: Response,
 ) => {
-  const { password, ...rest } = req.body;
-
-  const passwordHash = await hashPassword(password);
-
-  const [user] = await db
-    .insert(usersTable)
-    .values({ ...rest, password: passwordHash })
-    .returning(publicUserColumns);
-
-  const { accessToken, refreshToken } = await issueTokens(
-    res,
-    user.id,
-    user.role,
+  const { user, accessToken, refreshToken } = await authService.signup(
+    req.body,
   );
+
+  setAuthCookies(res, accessToken, refreshToken);
 
   res.status(201).json({
     status: "success",
@@ -118,31 +71,15 @@ export const login = async (
   req: Request<{}, unknown, LoginBody>,
   res: Response,
 ) => {
-  const { email, password } = req.body;
+  const { user, accessToken, refreshToken } = await authService.login(req.body);
 
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(and(eq(usersTable.email, email), isNull(usersTable.deactivatedAt)))
-    .limit(1);
-
-  if (!user || !(await verifyPassword(password, user.password))) {
-    throw ApiError.unauthenticated("Invalid email or password.");
-  }
-
-  const { accessToken, refreshToken } = await issueTokens(
-    res,
-    user.id,
-    user.role,
-  );
-
-  const { password: _password, ...safeUser } = user;
+  setAuthCookies(res, accessToken, refreshToken);
 
   res.status(200).json({
     status: "success",
     accessToken,
     refreshToken,
-    user: safeUser,
+    user,
   });
 };
 
@@ -153,117 +90,36 @@ export const refresh = async (req: Request, res: Response) => {
     throw ApiError.unauthenticated("Refresh token is required.");
   }
 
-  const [stored] = await db
-    .select()
-    .from(refreshTokensTable)
-    .where(eq(refreshTokensTable.tokenHash, hashToken(rawToken)))
-    .limit(1);
+  try {
+    const { accessToken, refreshToken } =
+      await authService.rotateTokens(rawToken);
 
-  if (!stored) {
-    throw ApiError.unauthenticated("Invalid refresh token.");
-  }
+    setAuthCookies(res, accessToken, refreshToken);
 
-  if (stored.revokedAt) {
-    await db
-      .update(refreshTokensTable)
-      .set({ revokedAt: new Date() })
-      .where(
-        and(
-          eq(refreshTokensTable.userId, stored.userId),
-          isNull(refreshTokensTable.revokedAt),
-        ),
-      );
+    res.status(200).json({ status: "success", accessToken, refreshToken });
+  } catch (err) {
     clearAuthCookies(res);
-    throw ApiError.unauthenticated("Refresh token has been revoked.");
+    throw err;
   }
-
-  if (stored.expiresAt <= new Date()) {
-    throw ApiError.unauthenticated("Refresh token has expired.");
-  }
-
-  const [user] = await db
-    .select({ role: usersTable.role })
-    .from(usersTable)
-    .where(
-      and(eq(usersTable.id, stored.userId), isNull(usersTable.deactivatedAt)),
-    )
-    .limit(1);
-
-  if (!user) {
-    clearAuthCookies(res);
-    throw ApiError.unauthenticated("User is no longer active.");
-  }
-
-  await db
-    .update(refreshTokensTable)
-    .set({ revokedAt: new Date() })
-    .where(eq(refreshTokensTable.id, stored.id));
-
-  const { accessToken, refreshToken } = await issueTokens(
-    res,
-    stored.userId,
-    user.role,
-  );
-
-  res.status(200).json({
-    status: "success",
-    accessToken,
-    refreshToken,
-  });
 };
 
 export const logout = async (req: Request, res: Response) => {
   const rawToken = readRefreshToken(req);
 
   if (rawToken) {
-    await db
-      .update(refreshTokensTable)
-      .set({ revokedAt: new Date() })
-      .where(
-        and(
-          eq(refreshTokensTable.tokenHash, hashToken(rawToken)),
-          isNull(refreshTokensTable.revokedAt),
-        ),
-      );
+    await authService.revokeRefreshToken(rawToken);
   }
 
   clearAuthCookies(res);
 
-  res.status(200).json({
-    status: "success",
-  });
+  res.status(200).json({ status: "success" });
 };
 
 export const forgotPassword = async (
   req: Request<{}, unknown, ForgotPasswordBody>,
   res: Response,
 ) => {
-  const { email } = req.body;
-
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(and(eq(usersTable.email, email), isNull(usersTable.deactivatedAt)))
-    .limit(1);
-
-  if (user) {
-    const { token, tokenHash } = generateToken();
-
-    await db
-      .update(usersTable)
-      .set({
-        passwordResetTokenHash: tokenHash,
-        passwordResetExpiresAt: resetTokenExpiry(),
-      })
-      .where(eq(usersTable.id, user.id));
-
-    const resetUrl = `${env.CLIENT_URL}/reset-password?token=${token}`;
-
-    await emailQueue.add(PASSWORD_RESET_JOB, {
-      to: user.email,
-      resetUrl,
-    } satisfies PasswordResetJob);
-  }
+  await authService.requestPasswordReset(req.body.email);
 
   res.status(200).json({
     status: "success",
@@ -275,42 +131,7 @@ export const resetPassword = async (
   req: Request<{}, unknown, ResetPasswordBody>,
   res: Response,
 ) => {
-  const { token, password } = req.body;
-
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.passwordResetTokenHash, hashToken(token)))
-    .limit(1);
-
-  if (
-    !user ||
-    !user.passwordResetExpiresAt ||
-    user.passwordResetExpiresAt <= new Date()
-  ) {
-    throw ApiError.badRequest("Invalid or expired reset token.");
-  }
-
-  const passwordHash = await hashPassword(password);
-
-  await db
-    .update(usersTable)
-    .set({
-      password: passwordHash,
-      passwordResetTokenHash: null,
-      passwordResetExpiresAt: null,
-    })
-    .where(eq(usersTable.id, user.id));
-
-  await db
-    .update(refreshTokensTable)
-    .set({ revokedAt: new Date() })
-    .where(
-      and(
-        eq(refreshTokensTable.userId, user.id),
-        isNull(refreshTokensTable.revokedAt),
-      ),
-    );
+  await authService.resetPassword(req.body.token, req.body.password);
 
   res.status(200).json({
     status: "success",

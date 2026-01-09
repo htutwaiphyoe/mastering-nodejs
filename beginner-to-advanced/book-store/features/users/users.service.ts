@@ -7,7 +7,7 @@ import {
   type AuthUser,
 } from "./users.model";
 import type { UpdateUserBody } from "./users.dto";
-import { refreshTokensTable } from "@/features/auth/auth.model";
+import { revokeUserRefreshTokens } from "@/features/auth/auth.service";
 import { ApiError } from "@/libs/error";
 
 export const getMe = async (userId: string) => {
@@ -89,15 +89,7 @@ export const deactivateUser = async (params: {
     .where(and(eq(usersTable.id, id), isNull(usersTable.deactivatedAt)))
     .returning(publicUserColumns);
 
-  await db
-    .update(refreshTokensTable)
-    .set({ revokedAt: new Date() })
-    .where(
-      and(
-        eq(refreshTokensTable.userId, id),
-        isNull(refreshTokensTable.revokedAt),
-      ),
-    );
+  await revokeUserRefreshTokens(id);
 
   return user;
 };
