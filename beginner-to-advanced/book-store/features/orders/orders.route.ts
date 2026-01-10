@@ -3,7 +3,7 @@ import { authenticate } from "@/middlewares/authenticate";
 import { authorize } from "@/middlewares/authorize";
 import { validate } from "@/middlewares/validate";
 import { idParamSchema } from "@/libs/validators";
-import { createOrderSchema, updateOrderStatusSchema } from "./orders.model";
+import { createOrderSchema, updateOrderStatusSchema } from "./orders.dto";
 import {
   createOrder,
   getOrders,
