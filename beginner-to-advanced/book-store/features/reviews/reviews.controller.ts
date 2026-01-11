@@ -17,7 +17,7 @@ export const createReview = async (
   const review = await reviewsService.createReview({
     userId: currentUser.id,
     bookId: req.params.bookId,
-    input: req.body,
+    body: req.body,
   });
 
   res.status(201).json({
@@ -58,7 +58,7 @@ export const updateReview = async (
   const review = await reviewsService.updateReview({
     id: req.params.id,
     user: currentUser,
-    input: req.body,
+    body: req.body,
   });
 
   res.status(200).json({

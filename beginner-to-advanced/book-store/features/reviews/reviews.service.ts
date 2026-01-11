@@ -60,9 +60,9 @@ const hasPurchased = async (userId: string, bookId: string) => {
 export const createReview = async (params: {
   userId: string;
   bookId: string;
-  input: CreateReviewBody;
+  body: CreateReviewBody;
 }): Promise<Review> => {
-  const { userId, bookId, input } = params;
+  const { userId, bookId, body } = params;
 
   if (!(await findActiveBook(bookId))) {
     throw ApiError.notFound("Book is not found.");
@@ -75,9 +75,11 @@ export const createReview = async (params: {
   return db.transaction(async (tx) => {
     const [review] = await tx
       .insert(reviewsTable)
-      .values({ bookId, userId, rating: input.rating, comment: input.comment })
+      .values({ bookId, userId, rating: body.rating, comment: body.comment })
       .returning();
+
     await recomputeBookRating(tx, bookId);
+
     return review;
   });
 };
@@ -131,7 +133,7 @@ const findReviewOrThrow = async (id: string): Promise<Review> => {
 export const updateReview = async (params: {
   id: string;
   user: AuthUser;
-  input: UpdateReviewBody;
+  body: UpdateReviewBody;
 }): Promise<Review> => {
   const existing = await findReviewOrThrow(params.id);
   assertOwnership(params.user, existing.userId);
@@ -139,10 +141,12 @@ export const updateReview = async (params: {
   return db.transaction(async (tx) => {
     const [review] = await tx
       .update(reviewsTable)
-      .set(params.input)
+      .set(params.body)
       .where(eq(reviewsTable.id, params.id))
       .returning();
+
     await recomputeBookRating(tx, existing.bookId);
+
     return review;
   });
 };
@@ -156,6 +160,7 @@ export const deleteReview = async (params: {
 
   await db.transaction(async (tx) => {
     await tx.delete(reviewsTable).where(eq(reviewsTable.id, params.id));
+
     await recomputeBookRating(tx, existing.bookId);
   });
 };
