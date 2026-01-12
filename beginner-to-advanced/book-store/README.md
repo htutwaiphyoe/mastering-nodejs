@@ -99,7 +99,7 @@ The environment is validated at boot — a missing or malformed value fails fast
 
 ## API Endpoints
 
-Responses use a consistent envelope: `{ "status": "success" | "error", ... }`.
+All domain endpoints are prefixed with **`/api/v1`** (e.g. `POST /api/v1/auth/login`); the paths below are shown relative to that. `/health` is the one exception — it lives at the root, unversioned, for uptime probes. Responses use a consistent envelope: `{ "status": "success" | "error", ... }`.
 
 ### Auth — `/auth`
 | Method | Path | Description |

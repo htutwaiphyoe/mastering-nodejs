@@ -8,6 +8,7 @@ import {
 } from "@/features/users/users.model";
 import { authorsTable } from "@/features/authors/authors.model";
 import { booksTable } from "@/features/books/books.model";
+import { ordersTable, orderItemsTable } from "@/features/orders/orders.model";
 
 export const api = request(app);
 
@@ -26,7 +27,7 @@ export const createUser = async (role: UserRole = "user") => {
   const password = "password123";
 
   const signup = await api
-    .post("/auth/signup")
+    .post("/api/v1/auth/signup")
     .send({ name: `User ${n}`, email, password });
 
   let token = signup.body.accessToken as string;
@@ -34,7 +35,7 @@ export const createUser = async (role: UserRole = "user") => {
 
   if (role !== "user") {
     await db.update(usersTable).set({ role }).where(eq(usersTable.id, user.id));
-    const login = await api.post("/auth/login").send({ email, password });
+    const login = await api.post("/api/v1/auth/login").send({ email, password });
     token = login.body.accessToken;
     user = login.body.user;
   }
@@ -73,4 +74,22 @@ export const seedBook = async (
     })
     .returning();
   return book;
+};
+
+// Records a completed purchase so the reviewer passes the verified-purchase gate.
+export const seedOrder = async (userId: string, bookId: string) => {
+  const [order] = await db
+    .insert(ordersTable)
+    .values({ userId, total: "10.00" })
+    .returning();
+
+  await db.insert(orderItemsTable).values({
+    orderId: order.id,
+    bookId,
+    title: "Book",
+    price: "10.00",
+    quantity: 1,
+  });
+
+  return order;
 };

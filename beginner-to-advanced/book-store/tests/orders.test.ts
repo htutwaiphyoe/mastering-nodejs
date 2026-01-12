@@ -23,7 +23,7 @@ describe("POST /orders", () => {
     const book = await seedBook({ price: "9.99", stock: 5 });
 
     const res = await api
-      .post("/orders")
+      .post("/api/v1/orders")
       .set(bearer(token))
       .send({ items: [{ bookId: book.id, quantity: 2 }] });
 
@@ -41,7 +41,7 @@ describe("POST /orders", () => {
     const short = await seedBook({ stock: 1 });
 
     const res = await api
-      .post("/orders")
+      .post("/api/v1/orders")
       .set(bearer(token))
       .send({
         items: [
@@ -58,7 +58,7 @@ describe("POST /orders", () => {
 
   it("rejects an empty item list (400)", async () => {
     const { token } = await createUser();
-    const res = await api.post("/orders").set(bearer(token)).send({ items: [] });
+    const res = await api.post("/api/v1/orders").set(bearer(token)).send({ items: [] });
     expect(res.status).toBe(400);
   });
 });
@@ -70,15 +70,15 @@ describe("GET /orders/:id", () => {
     const book = await seedBook({ stock: 5 });
 
     const created = await api
-      .post("/orders")
+      .post("/api/v1/orders")
       .set(bearer(owner.token))
       .send({ items: [{ bookId: book.id, quantity: 1 }] });
     const orderId = created.body.order.id;
 
-    const asOwner = await api.get(`/orders/${orderId}`).set(bearer(owner.token));
+    const asOwner = await api.get(`/api/v1/orders/${orderId}`).set(bearer(owner.token));
     expect(asOwner.status).toBe(200);
 
-    const asOther = await api.get(`/orders/${orderId}`).set(bearer(other.token));
+    const asOther = await api.get(`/api/v1/orders/${orderId}`).set(bearer(other.token));
     expect(asOther.status).toBe(403);
   });
 });
@@ -89,21 +89,21 @@ describe("PATCH /orders/:id/cancel", () => {
     const book = await seedBook({ stock: 5 });
 
     const created = await api
-      .post("/orders")
+      .post("/api/v1/orders")
       .set(bearer(token))
       .send({ items: [{ bookId: book.id, quantity: 2 }] });
     const orderId = created.body.order.id;
     expect(await stockOf(book.id)).toBe(3);
 
     const cancel = await api
-      .patch(`/orders/${orderId}/cancel`)
+      .patch(`/api/v1/orders/${orderId}/cancel`)
       .set(bearer(token));
     expect(cancel.status).toBe(200);
     expect(cancel.body.order.status).toBe("cancelled");
     expect(await stockOf(book.id)).toBe(5); // restocked
 
     const again = await api
-      .patch(`/orders/${orderId}/cancel`)
+      .patch(`/api/v1/orders/${orderId}/cancel`)
       .set(bearer(token));
     expect(again.status).toBe(409);
   });

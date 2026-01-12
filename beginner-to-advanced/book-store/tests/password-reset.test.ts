@@ -31,7 +31,7 @@ const resetHashOf = async (userId: string) => {
 describe("POST /auth/forgot-password", () => {
   it("returns a generic 200 and sets a reset token for a real account", async () => {
     const { email, user } = await createUser();
-    const res = await api.post("/auth/forgot-password").send({ email });
+    const res = await api.post("/api/v1/auth/forgot-password").send({ email });
     expect(res.status).toBe(200);
     expect(res.body.message).toContain("If an account exists");
     expect(await resetHashOf(user.id)).toBeString();
@@ -39,7 +39,7 @@ describe("POST /auth/forgot-password", () => {
 
   it("returns the same 200 for an unknown email (no enumeration)", async () => {
     const res = await api
-      .post("/auth/forgot-password")
+      .post("/api/v1/auth/forgot-password")
       .send({ email: "nobody@test.com" });
     expect(res.status).toBe(200);
     expect(res.body.message).toContain("If an account exists");
@@ -52,22 +52,22 @@ describe("POST /auth/reset-password", () => {
     const token = await plantResetToken(user.id, new Date(Date.now() + 60_000));
 
     const res = await api
-      .post("/auth/reset-password")
+      .post("/api/v1/auth/reset-password")
       .send({ token, password: "newpassword123" });
     expect(res.status).toBe(200);
 
-    const oldLogin = await api.post("/auth/login").send({ email, password });
+    const oldLogin = await api.post("/api/v1/auth/login").send({ email, password });
     expect(oldLogin.status).toBe(401);
 
     const newLogin = await api
-      .post("/auth/login")
+      .post("/api/v1/auth/login")
       .send({ email, password: "newpassword123" });
     expect(newLogin.status).toBe(200);
   });
 
   it("rejects an invalid token with 400", async () => {
     const res = await api
-      .post("/auth/reset-password")
+      .post("/api/v1/auth/reset-password")
       .send({ token: "garbage", password: "newpassword123" });
     expect(res.status).toBe(400);
   });
@@ -77,12 +77,12 @@ describe("POST /auth/reset-password", () => {
     const token = await plantResetToken(user.id, new Date(Date.now() + 60_000));
 
     const first = await api
-      .post("/auth/reset-password")
+      .post("/api/v1/auth/reset-password")
       .send({ token, password: "newpassword123" });
     expect(first.status).toBe(200);
 
     const second = await api
-      .post("/auth/reset-password")
+      .post("/api/v1/auth/reset-password")
       .send({ token, password: "anotherpass123" });
     expect(second.status).toBe(400);
   });
@@ -92,7 +92,7 @@ describe("POST /auth/reset-password", () => {
     const token = await plantResetToken(user.id, new Date(Date.now() - 1000));
 
     const res = await api
-      .post("/auth/reset-password")
+      .post("/api/v1/auth/reset-password")
       .send({ token, password: "newpassword123" });
     expect(res.status).toBe(400);
   });

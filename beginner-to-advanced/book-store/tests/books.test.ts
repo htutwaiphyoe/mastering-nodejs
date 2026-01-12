@@ -17,7 +17,7 @@ const bearer = (token: string) => ({ Authorization: `Bearer ${token}` });
 describe("GET /books", () => {
   it("is public and returns a paginated list", async () => {
     await seedBook();
-    const res = await api.get("/books");
+    const res = await api.get("/api/v1/books");
     expect(res.status).toBe(200);
     expect(res.body.pagination.total).toBe(1);
     expect(res.body.books).toHaveLength(1);
@@ -30,10 +30,10 @@ describe("GET /books", () => {
       .set({ deletedAt: new Date() })
       .where(eq(booksTable.id, book.id));
 
-    const list = await api.get("/books");
+    const list = await api.get("/api/v1/books");
     expect(list.body.pagination.total).toBe(0);
 
-    const byId = await api.get(`/books/${book.id}`);
+    const byId = await api.get(`/api/v1/books/${book.id}`);
     expect(byId.status).toBe(404);
   });
 });
@@ -42,7 +42,7 @@ describe("POST /books", () => {
   it("requires authentication", async () => {
     const author = await seedAuthor();
     const res = await api
-      .post("/books")
+      .post("/api/v1/books")
       .send({ title: "X", authorId: author.id, price: 5, publishedDate: "2020-01-01" });
     expect(res.status).toBe(401);
   });
@@ -51,7 +51,7 @@ describe("POST /books", () => {
     const { token } = await createUser("user");
     const author = await seedAuthor();
     const res = await api
-      .post("/books")
+      .post("/api/v1/books")
       .set(bearer(token))
       .send({ title: "X", authorId: author.id, price: 5, publishedDate: "2020-01-01" });
     expect(res.status).toBe(403);
@@ -61,7 +61,7 @@ describe("POST /books", () => {
     const { token } = await createUser("publisher");
     const author = await seedAuthor();
     const res = await api
-      .post("/books")
+      .post("/api/v1/books")
       .set(bearer(token))
       .send({ title: "X", authorId: author.id, price: 5, publishedDate: "2020-01-01" });
     expect(res.status).toBe(201);
@@ -79,19 +79,19 @@ describe("book ownership (PATCH/DELETE)", () => {
     const book = await seedBook({ authorId: author.id, createdBy: owner.user.id });
 
     const byOwner = await api
-      .patch(`/books/${book.id}`)
+      .patch(`/api/v1/books/${book.id}`)
       .set(bearer(owner.token))
       .send({ stock: 3 });
     expect(byOwner.status).toBe(200);
 
     const byOther = await api
-      .patch(`/books/${book.id}`)
+      .patch(`/api/v1/books/${book.id}`)
       .set(bearer(other.token))
       .send({ stock: 4 });
     expect(byOther.status).toBe(403);
 
     const byAdmin = await api
-      .delete(`/books/${book.id}`)
+      .delete(`/api/v1/books/${book.id}`)
       .set(bearer(admin.token));
     expect(byAdmin.status).toBe(200);
   });

@@ -44,21 +44,21 @@ app.use("/health", healthRouter);
 
 app.use(apiLimiter);
 
-app.use("/books", bookRouter);
+app.use("/api/v1/books", bookRouter);
 
-app.use("/authors", authorRouter);
+app.use("/api/v1/authors", authorRouter);
 
-app.use("/auth", authLimiter, authRouter);
+app.use("/api/v1/auth", authLimiter, authRouter);
 
-app.use("/users", userRouter);
+app.use("/api/v1/users", userRouter);
 
-app.use("/orders", orderRouter);
+app.use("/api/v1/orders", orderRouter);
 
-app.use("/authors/:id/books", authorBooksRouter);
+app.use("/api/v1/authors/:id/books", authorBooksRouter);
 
-app.use("/books/:bookId/reviews", bookReviewsRouter);
+app.use("/api/v1/books/:bookId/reviews", bookReviewsRouter);
 
-app.use("/reviews", reviewsRouter);
+app.use("/api/v1/reviews", reviewsRouter);
 
 app.use(notFoundHandler);
 

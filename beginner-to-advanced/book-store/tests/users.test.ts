@@ -11,14 +11,14 @@ describe("PATCH /users/:id (update profile)", () => {
     const b = await createUser();
 
     const self = await api
-      .patch(`/users/${a.user.id}`)
+      .patch(`/api/v1/users/${a.user.id}`)
       .set(bearer(a.token))
       .send({ name: "Renamed" });
     expect(self.status).toBe(200);
     expect(self.body.user.name).toBe("Renamed");
 
     const other = await api
-      .patch(`/users/${b.user.id}`)
+      .patch(`/api/v1/users/${b.user.id}`)
       .set(bearer(a.token))
       .send({ name: "Hacked" });
     expect(other.status).toBe(403);
@@ -29,12 +29,12 @@ describe("account deactivation", () => {
   it("lets a user deactivate their own account", async () => {
     const user = await createUser();
     const res = await api
-      .patch(`/users/${user.user.id}/deactivate`)
+      .patch(`/api/v1/users/${user.user.id}/deactivate`)
       .set(bearer(user.token));
     expect(res.status).toBe(200);
 
     // /me re-checks the DB and now rejects the deactivated account
-    const me = await api.get("/users/me").set(bearer(user.token));
+    const me = await api.get("/api/v1/users/me").set(bearer(user.token));
     expect(me.status).toBe(401);
   });
 
@@ -42,7 +42,7 @@ describe("account deactivation", () => {
     const a = await createUser();
     const b = await createUser();
     const res = await api
-      .patch(`/users/${b.user.id}/deactivate`)
+      .patch(`/api/v1/users/${b.user.id}/deactivate`)
       .set(bearer(a.token));
     expect(res.status).toBe(403);
   });
@@ -50,7 +50,7 @@ describe("account deactivation", () => {
   it("refuses to deactivate an admin account", async () => {
     const admin = await createUser("admin");
     const res = await api
-      .patch(`/users/${admin.user.id}/deactivate`)
+      .patch(`/api/v1/users/${admin.user.id}/deactivate`)
       .set(bearer(admin.token));
     expect(res.status).toBe(403);
   });
@@ -60,12 +60,12 @@ describe("account deactivation", () => {
     const user = await createUser();
 
     const deactivate = await api
-      .patch(`/users/${user.user.id}/deactivate`)
+      .patch(`/api/v1/users/${user.user.id}/deactivate`)
       .set(bearer(admin.token));
     expect(deactivate.status).toBe(200);
 
     const reactivate = await api
-      .patch(`/users/${user.user.id}/reactivate`)
+      .patch(`/api/v1/users/${user.user.id}/reactivate`)
       .set(bearer(admin.token));
     expect(reactivate.status).toBe(200);
   });
@@ -74,12 +74,12 @@ describe("account deactivation", () => {
     const admin = await createUser("admin");
     const user = await createUser();
     await api
-      .patch(`/users/${user.user.id}/deactivate`)
+      .patch(`/api/v1/users/${user.user.id}/deactivate`)
       .set(bearer(admin.token));
 
     const other = await createUser();
     const res = await api
-      .patch(`/users/${user.user.id}/reactivate`)
+      .patch(`/api/v1/users/${user.user.id}/reactivate`)
       .set(bearer(other.token));
     expect(res.status).toBe(403);
   });
@@ -90,7 +90,7 @@ describe("role management", () => {
     const admin = await createUser("admin");
     const user = await createUser();
     const res = await api
-      .patch(`/users/${user.user.id}/role`)
+      .patch(`/api/v1/users/${user.user.id}/role`)
       .set(bearer(admin.token))
       .send({ role: "publisher" });
     expect(res.status).toBe(200);
@@ -101,7 +101,7 @@ describe("role management", () => {
     const a = await createUser();
     const b = await createUser();
     const res = await api
-      .patch(`/users/${b.user.id}/role`)
+      .patch(`/api/v1/users/${b.user.id}/role`)
       .set(bearer(a.token))
       .send({ role: "admin" });
     expect(res.status).toBe(403);
@@ -110,7 +110,7 @@ describe("role management", () => {
   it("forbids an admin from changing their own role", async () => {
     const admin = await createUser("admin");
     const res = await api
-      .patch(`/users/${admin.user.id}/role`)
+      .patch(`/api/v1/users/${admin.user.id}/role`)
       .set(bearer(admin.token))
       .send({ role: "user" });
     expect(res.status).toBe(403);
