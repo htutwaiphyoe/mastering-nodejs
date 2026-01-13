@@ -13,6 +13,7 @@ Built with **Bun**, **Express 5**, **TypeScript**, **Drizzle ORM**, **PostgreSQL
 - **Authorization** — role-based (`admin`, `publisher`, `user`) plus ownership checks (publishers manage only what they created).
 - **Users** — profile, self-or-admin updates, account deactivation/reactivation, admin role management.
 - **Orders** — transactional checkout with concurrency-safe stock decrement and price snapshots, order history, cancellation with restock, and admin status transitions.
+- **Reviews & ratings** — verified-purchase reviews (one per user per book); each book keeps a denormalized average rating + count, recomputed transactionally on every review change.
 - **Background work** — password-reset and order emails sent off the request path via a **BullMQ** queue; a **node-cron** job prunes expired tokens.
 - **Production hardening** — Zod-validated env, `helmet`, CORS, rate limiting, a DB-checked `/health` endpoint, and structured logging (`pino`).
 
@@ -148,6 +149,14 @@ All domain endpoints are prefixed with **`/api/v1`** (e.g. `POST /api/v1/auth/lo
 | GET | `/:id` | owner or admin | includes line items |
 | PATCH | `/:id/cancel` | owner or admin | `pending` only; restocks |
 | PATCH | `/:id/status` | admin | `pending→paid→shipped` |
+
+### Reviews — `/books/:bookId/reviews` and `/reviews`
+| Method | Path | Access | Notes |
+|--------|------|--------|-------|
+| POST | `/books/:bookId/reviews` | authenticated | verified purchase; one per user/book (dup → 409) |
+| GET | `/books/:bookId/reviews` | public | paginated; includes reviewer name |
+| PATCH | `/reviews/:id` | owner or admin | recomputes the book's rating |
+| DELETE | `/reviews/:id` | owner or admin | recomputes the book's rating |
 
 ### Health — `/health`
 | Method | Path | Description |

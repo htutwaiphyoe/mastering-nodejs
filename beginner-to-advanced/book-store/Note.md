@@ -304,6 +304,61 @@ If the row comes back, you got the stock (and the snapshot); if it comes back em
 
 One design choice worth noting: **cancellation lives on its own endpoint**, not the generic status-change endpoint, because it has a side effect (restock) and looser authorization (a buyer can cancel their own order, but only an admin advances fulfillment). Modelling status as a small transition map (`pending→paid→shipped`) keeps illegal jumps out, and routing `cancelled` through the dedicated cancel path keeps the restock logic in exactly one place.
 
+## 22. Structuring a feature: the layered split
+
+Early on each feature was two files — a `model` (table **and** its Zod schemas) and a `controller` (request handling **and** database queries). That's fine until the controllers grow: validation, HTTP shaping, business rules, and SQL all pile into one function. The fix is to give each feature five thin layers, each with one job:
+
+```
+features/<name>/
+  <name>.model.ts       # the Drizzle table + inferred types (data shape)
+  <name>.dto.ts         # Zod schemas + request-body/query types (the edge contract)
+  <name>.service.ts     # DB operations + business rules (no req/res)
+  <name>.controller.ts  # read req → call service → shape res (no SQL)
+  <name>.route.ts       # wire endpoints + middleware
+```
+
+The key discipline: **the controller never touches the database, and the service never touches `req`/`res`.** A controller reads input (`getCurrentUser(req)`, parsed body/query), calls a service function, and shapes the response — that's it. The service owns the queries, transactions, ownership checks, and throws `ApiError` for failures (the central error handler maps them to HTTP). That separation is what makes the service unit-testable in isolation and lets the same logic be reused (e.g. `authService.revokeUserRefreshTokens` is called from both auth and users).
+
+**Watch out — some things legitimately straddle a layer.** Cookies are the clearest example: setting a refresh-token cookie touches `res`, so the cookie helpers stay in the **controller**, while the token *generation and storage* live in the service. The rule isn't "controllers have no logic" — it's "controllers only do request/response work."
+
+**Watch out — naming conventions pay off.** Consistency across features (`getX` not `listX`, request-body types suffixed `…Body`, query types `…Query`, a `body` parameter name) means every feature reads the same way and there's no guessing. Worth agreeing on early and applying everywhere.
+
+## 23. Feature boundaries and the composition root
+
+Features will reference each other (a book has an author; a review targets a book), and the direction of those references matters. Aim for a **single, acyclic direction**. Here it's `reviews → books → authors` at the data layer (foreign keys), and that's it. When a feature needs to reach "backwards," that's a smell:
+
+- The old `GET /authors/:id/books` had `authors` reaching into the *books* table — the wrong way. It moved to a `booksService.getBooksByAuthor` (a **books** query, where it belongs); authors no longer imports books at all.
+- Deactivating a user must revoke their refresh tokens (an *auth* concern). Instead of `users` reaching into the `refresh_tokens` table, it calls `authService.revokeUserRefreshTokens(id)` — depending on auth's *public function*, not its internals.
+
+**The composition root.** Individual feature routers don't know their mount paths or how they nest. `app.ts` wires everything together — it mounts `/api/v1/books`, and also composes the nested URLs like `/api/v1/authors/:id/books` and `/api/v1/books/:bookId/reviews` (each nested router uses `mergeParams` to read the parent id). Keeping the URL topology in one place means neither feature hard-codes the other's path.
+
+**Watch out — mutual dependence between tightly-coupled features is okay.** `auth` reads the users table and `users` calls an auth service function — a two-way dependency. For features as intertwined as auth and users that's acceptable; what you avoid is a *cycle at the same layer* (auth.service ↔ users.service). Here auth.service depends only on `users.model`, so it stays acyclic.
+
+## 24. API versioning
+
+All domain routes sit under a **`/api/v1`** prefix; `/health` deliberately does not (uptime probes want a stable, unversioned path). Versioning up front is cheap and buys room later: a breaking change can ship as `/api/v2` mounted alongside `v1`, so existing clients keep working while new ones migrate. Retro-fitting a version prefix after clients exist is far more painful.
+
+**Watch out:** the version prefix belongs to *routing*, not to the feature. Feature routers define paths relative to their own resource (`/`, `/:id`); the prefix is applied once where they're mounted, so bumping to v2 is a mounting change, not a per-feature edit.
+
+## 25. Denormalized aggregates: book ratings
+
+A book shows an average rating and a review count. Two ways to get them: compute on every read (`AVG`/`COUNT` join each time), or **store** `ratingsAverage`/`ratingsCount` on the book and keep them current. This project stores them — reads are then free (the values sit on the book row), at the cost of maintaining them on writes.
+
+The safe way to maintain a denormalized aggregate is to **recompute it from source inside the same transaction as the change**, not to increment/decrement it:
+
+```ts
+// after any review insert/update/delete, in the same tx:
+const [agg] = await tx.select({
+  average: sql`coalesce(avg(${reviews.rating}), 0)`,
+  total: count(),
+}).from(reviews).where(eq(reviews.bookId, bookId));
+await tx.update(books).set({ ratingsAverage: ..., ratingsCount: agg.total }).where(...);
+```
+
+Recomputing from source is self-correcting — it can't drift the way manual `count + 1` / `count - 1` bookkeeping does if an edge case is missed. Because it shares the review write's transaction, the review and the updated average commit together or not at all.
+
+**Watch out — a "verified purchase" rule is a cross-feature query.** Reviews are gated to users who actually bought the book, which means checking `order_items` joined to a non-cancelled `orders` row for that user — the reviews service reads order/book data. That's the natural dependency direction (reviews → orders/books), so it's fine; just be deliberate that a review's precondition lives in *another* feature's tables.
+
 ---
 
 *Field notes from building the Book Store API — kept as a quick reference for next time.*
